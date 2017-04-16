@@ -14,7 +14,7 @@ lanproxy是一个将局域网个人电脑、服务器代理到公网的工具，
 #### 配置
 ##### server
 server的配置文件放置在conf目录中，配置 config.json
-```json
+```js
 {
   "serverPort":4900,//服务器与内网client数据交互的端口
   "clients":[//支持同时配置多个client
