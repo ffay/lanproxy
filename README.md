@@ -30,6 +30,7 @@ server的配置文件放置在conf目录中，配置 config.json
   ]
 }
 ```
+> 配置修改不用重启服务，5秒后生效
 
 ##### client
 client的配置文件放置在conf目录中，配置 config.properties
