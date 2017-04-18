@@ -90,12 +90,22 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
         }
 
         String mimeType = MimeType.getMimeType(MimeType.parseSuffix(path));
-        RandomAccessFile file = new RandomAccessFile(rfile, "r");
+        long length = 0;
+        RandomAccessFile raf = null;
+        try {
+            raf = new RandomAccessFile(rfile, "r");
+            length = raf.length();
+        } finally {
+            if (length < 0 && raf != null) {
+                raf.close();
+            }
+        }
+
         HttpResponse response = new DefaultHttpResponse(request.getProtocolVersion(), status);
         response.headers().set(HttpHeaders.Names.CONTENT_TYPE, mimeType);
         boolean keepAlive = HttpHeaders.isKeepAlive(request);
         if (keepAlive) {
-            response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, file.length());
+            response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, length);
             response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
         }
 
@@ -103,17 +113,15 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
         ctx.write(response);
 
         if (ctx.pipeline().get(SslHandler.class) == null) {
-            ctx.write(new DefaultFileRegion(file.getChannel(), 0, file.length()));
+            ctx.write(new DefaultFileRegion(raf.getChannel(), 0, length));
         } else {
-            ctx.write(new ChunkedNioFile(file.getChannel()));
+            ctx.write(new ChunkedNioFile(raf.getChannel()));
         }
 
         ChannelFuture future = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
         if (!keepAlive) {
             future.addListener(ChannelFutureListener.CLOSE);
         }
-        file.close();
-
     }
 
     private static void send100Continue(ChannelHandlerContext ctx) {

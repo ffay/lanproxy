@@ -217,11 +217,12 @@ public class MimeType {
             String endUrl = spUrl[len - 1];
             if (matcher.find()) {
                 String[] spEndUrl = endUrl.split("\\?");
-                return spEndUrl[0].split("\\.")[1];
+                endUrl = spEndUrl[0];
             }
-            return endUrl.split("\\.")[1];
+            String[] endUrlArr = endUrl.split("\\.");
+            return endUrlArr[endUrlArr.length - 1];
         } catch (Exception e) {
-            return "html";
+            return "";
         }
     }
 }
