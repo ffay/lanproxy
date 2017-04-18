@@ -54,6 +54,7 @@ public class RealServerChannelHandler extends SimpleChannelInboundHandler<ByteBu
             proxyMessage.setUri(userId);
             channel.writeAndFlush(proxyMessage);
         }
+
         super.channelInactive(ctx);
     }
 
@@ -69,6 +70,7 @@ public class RealServerChannelHandler extends SimpleChannelInboundHandler<ByteBu
             proxyMessage.setData(realServerChannel.isWritable() ? new byte[] { 0x01 } : new byte[] { 0x00 });
             channel.writeAndFlush(proxyMessage);
         }
+
         super.channelWritabilityChanged(ctx);
     }
 

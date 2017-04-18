@@ -54,58 +54,52 @@ public class ClientChannelMannager {
     }
 
     public static void addRealServerChannel(String userId, Channel realServerChannel) {
-        synchronized (realServerChannels) {
-            realServerChannels.put(userId, realServerChannel);
-        }
+        realServerChannels.put(userId, realServerChannel);
     }
 
     public static Channel removeRealServerChannel(String userId) {
-        synchronized (realServerChannels) {
-            return realServerChannels.remove(userId);
-        }
+        return realServerChannels.remove(userId);
     }
 
     public static void setRealServerChannelReadability(Channel realServerChannel, Boolean client, Boolean user) {
         logger.info("update real server channel readability, {} {}", client, user);
-        synchronized (realServerChannel) {
-            if (client != null) {
-                realServerChannel.attr(CLIENT_CHANNEL_WRITEABLE).set(client);
-            }
 
-            if (user != null) {
-                realServerChannel.attr(USER_CHANNEL_WRITEABLE).set(user);
-            }
-
-            if (realServerChannel.attr(CLIENT_CHANNEL_WRITEABLE).get()
-                    && realServerChannel.attr(USER_CHANNEL_WRITEABLE).get()) {
-                realServerChannel.config().setOption(ChannelOption.AUTO_READ, true);
-            } else {
-                realServerChannel.config().setOption(ChannelOption.AUTO_READ, false);
-            }
+        if (client != null) {
+            realServerChannel.attr(CLIENT_CHANNEL_WRITEABLE).set(client);
         }
+
+        if (user != null) {
+            realServerChannel.attr(USER_CHANNEL_WRITEABLE).set(user);
+        }
+
+        if (realServerChannel.attr(CLIENT_CHANNEL_WRITEABLE).get()
+                && realServerChannel.attr(USER_CHANNEL_WRITEABLE).get()) {
+            realServerChannel.config().setOption(ChannelOption.AUTO_READ, true);
+        } else {
+            realServerChannel.config().setOption(ChannelOption.AUTO_READ, false);
+        }
+
     }
 
     public static void notifyChannelWritabilityChanged(Channel channel) {
         logger.info("channel writability changed, {}", channel.isWritable());
-        synchronized (realServerChannels) {
-            Iterator<String> ite = realServerChannels.keySet().iterator();
-            while (ite.hasNext()) {
-                Channel realServerChannel = realServerChannels.get(ite.next());
-                setRealServerChannelReadability(realServerChannel, channel.isWritable(), null);
-            }
+
+        Iterator<String> ite = realServerChannels.keySet().iterator();
+        while (ite.hasNext()) {
+            Channel realServerChannel = realServerChannels.get(ite.next());
+            setRealServerChannelReadability(realServerChannel, channel.isWritable(), null);
         }
     }
 
     public static void clearRealServerChannels() {
         logger.warn("channel closed, clear real server channels");
-        synchronized (realServerChannels) {
-            Iterator<String> ite = realServerChannels.keySet().iterator();
-            while (ite.hasNext()) {
-                Channel realServerChannel = realServerChannels.get(ite.next());
-                realServerChannel.close();
-            }
 
-            realServerChannels.clear();
+        Iterator<String> ite = realServerChannels.keySet().iterator();
+        while (ite.hasNext()) {
+            Channel realServerChannel = realServerChannels.get(ite.next());
+            realServerChannel.close();
         }
+
+        realServerChannels.clear();
     }
 }

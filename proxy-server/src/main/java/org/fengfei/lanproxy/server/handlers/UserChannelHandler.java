@@ -61,6 +61,8 @@ public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
             ctx.channel().close();
         } else {
             String userId = newUserId();
+
+            // 用户连接到代理服务器时，设置用户连接不可读，等待代理后端服务器连接成功后再改变为可读状态
             ProxyChannelManager.setUserChannelReadability(userChannel, false, proxyChannel.isWritable());
             ProxyChannelManager.addUserChannel(proxyChannel, userId, userChannel);
             ProxyMessage proxyMessage = new ProxyMessage();
@@ -117,6 +119,7 @@ public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
             proxyMessage.setData(userChannel.isWritable() ? new byte[] { 0x01 } : new byte[] { 0x00 });
             proxyChannel.writeAndFlush(proxyMessage);
         }
+
         super.channelWritabilityChanged(ctx);
     }
 

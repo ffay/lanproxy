@@ -11,6 +11,7 @@ import org.fengfei.lanproxy.protocol.ProxyMessageDecoder;
 import org.fengfei.lanproxy.protocol.ProxyMessageEncoder;
 import org.fengfei.lanproxy.server.config.ProxyConfig;
 import org.fengfei.lanproxy.server.config.ProxyConfig.ConfigChangedListener;
+import org.fengfei.lanproxy.server.config.web.WebConfigContainer;
 import org.fengfei.lanproxy.server.handlers.ServerChannelHandler;
 import org.fengfei.lanproxy.server.handlers.UserChannelHandler;
 import org.slf4j.Logger;
@@ -48,9 +49,7 @@ public class ProxyServerContainer implements Container, ConfigChangedListener {
         serverBossGroup = new NioEventLoopGroup();
         serverWorkerGroup = new NioEventLoopGroup();
 
-        ProxyConfig.addConfigChangedListener(this);
-        ProxyConfig.update();
-
+        ProxyConfig.getInstance().addConfigChangedListener(this);
     }
 
     @Override
@@ -71,11 +70,13 @@ public class ProxyServerContainer implements Container, ConfigChangedListener {
                 });
 
         try {
-            bootstrap.bind(ProxyConfig.getInstance().getServerPort()).get();
+            bootstrap.bind(ProxyConfig.getInstance().getServerBind(), ProxyConfig.getInstance().getServerPort()).get();
             logger.info("proxy server start on port " + ProxyConfig.getInstance().getServerPort());
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
+
+        startUserPort();
 
     }
 
@@ -119,7 +120,7 @@ public class ProxyServerContainer implements Container, ConfigChangedListener {
     }
 
     public static void main(String[] args) {
-        ContainerHelper.start(Arrays.asList(new Container[] { new ProxyServerContainer() }));
+        ContainerHelper.start(Arrays.asList(new Container[] { new ProxyServerContainer(), new WebConfigContainer() }));
     }
 
 }

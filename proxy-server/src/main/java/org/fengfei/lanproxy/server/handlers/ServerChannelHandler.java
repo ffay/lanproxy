@@ -53,6 +53,8 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
         String userId = proxyMessage.getUri();
         Channel userChannel = ProxyChannelManager.getUserChannel(ctx.channel(), userId);
         if (userChannel != null) {
+
+            // 同步代理客户端与后端服务器的连接可写状态
             boolean writeable = proxyMessage.getData()[0] == 0x01 ? true : false;
             ProxyChannelManager.setUserChannelReadability(userChannel, writeable, null);
         }
@@ -80,6 +82,8 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
         String userId = proxyMessage.getUri();
         Channel userChannel = ProxyChannelManager.getUserChannel(ctx.channel(), userId);
         if (userChannel != null) {
+
+            // 代理客户端与后端服务器连接成功，修改用户连接为可读状态
             ProxyChannelManager.setUserChannelReadability(userChannel, true, ctx.channel().isWritable());
         }
     }
@@ -102,18 +106,18 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
         }
 
         logger.info("set port => channel, {} {}", clientKey, ports);
-        ProxyChannelManager.addChannel(ports, ctx.channel());
+        ProxyChannelManager.addProxyChannel(ports, ctx.channel());
     }
 
     @Override
     public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
-        ProxyChannelManager.notifyChannelWritabilityChanged(ctx.channel());
+        ProxyChannelManager.notifyProxyChannelWritabilityChanged(ctx.channel());
         super.channelWritabilityChanged(ctx);
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        ProxyChannelManager.removeChannel(ctx.channel());
+        ProxyChannelManager.removeProxyChannel(ctx.channel());
         super.channelInactive(ctx);
     }
 
