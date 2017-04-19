@@ -32,25 +32,21 @@ config.admin.username=admin
 config.admin.password=admin
 ```
 
-代理配置，打开地址 http://ip:8090 ，使用上面配置中配置的用户名密码登录，进入如下代理配置界面
-
-![webconfig](webconfig.jpg)
+代理配置，打开地址 http://ip:8090 ，使用上面配置中配置的用户名密码登录，进入代理配置界面，在其中输入下面的配置内容即可
 
 ```js
-{
-  "serverPort":4900,//服务器与内网client数据交互的端口
-  "clients":[//支持同时配置多个client
-    {
-      "clientKey":"client_01",//一个proxy-server可以支持多个client连接，通过client_key区分
-      "proxyMappings":[//支持同时配置多个代理映射
-        {
-          "inetPort":8080,//公网端口，本配置表示访问公网ip的8080端口将代理到内网192.168.1.5的8080端口
-          "lan":"192.168.1.5:8080" // 要代理的后端服务器
-        }
-      ]
-    }
-  ]
-}
+[
+  {
+    "clientKey":"client_01",//一个proxy-server可以支持多个client连接，通过client_key区分
+    "proxyMappings":[//支持同时配置多个代理映射
+      {
+        "inetPort":8080,//公网端口，本配置表示访问公网ip的8080端口将代理到内网192.168.1.5的8080端口
+        "lan":"192.168.1.5:8080" // 要代理的后端服务器
+      }
+    ]
+  }
+  //支持同时配置多个client
+]
 ```
 
 > 配置存放在 ~/.lanproxy/config.json 文件中
