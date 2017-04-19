@@ -32,7 +32,9 @@ config.admin.username=admin
 config.admin.password=admin
 ```
 
-代理配置，打开地址 http://ip:8090 ，使用上面配置中配置的用户名密码登录，进入代理配置界面，在其中输入下面的配置内容即可
+代理配置，打开地址 http://ip:8090 ，使用上面配置中配置的用户名密码登录，进入如下代理配置界面
+
+![webconfig](webconfig.png)
 
 ```js
 [
