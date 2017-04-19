@@ -85,13 +85,13 @@ body :-ms-input-placeholder {
 	font-weight: 200;
 }
 
-form {
+.form {
 	padding: 20px 0;
 	position: relative;
 	z-index: 2;
 }
 
-form input {
+.form input {
 	-webkit-appearance: none;
 	-moz-appearance: none;
 	appearance: none;
@@ -111,17 +111,17 @@ form input {
 	font-weight: 300;
 }
 
-form input:hover {
+.form input:hover {
 	background-color: rgba(255, 255, 255, 0.4);
 }
 
-form input:focus {
+.form input:focus {
 	background-color: white;
 	width: 300px;
 	color: #53e3a6;
 }
 
-form button {
+.form button {
 	-webkit-appearance: none;
 	-moz-appearance: none;
 	appearance: none;
@@ -138,7 +138,7 @@ form button {
 	transition-duration: 0.25s;
 }
 
-form button:hover {
+.form button:hover {
 	background-color: #f5f7f9;
 }
 </style>
@@ -149,11 +149,11 @@ form button:hover {
 		<div class="container">
 			<h1>LanProxy</h1>
 
-			<form class="form">
+			<div class="form">
 				<input type="text" class="username" placeholder="用户名">
 				<input type="password" class="password" placeholder="密码">
 				<button type="submit" id="login-button">登录</button>
-			</form>
+			</div>
 		</div>
 	</div>
 
