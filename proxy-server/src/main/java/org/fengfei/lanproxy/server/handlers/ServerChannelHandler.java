@@ -26,26 +26,26 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
     protected void channelRead0(ChannelHandlerContext ctx, ProxyMessage proxyMessage) throws Exception {
         logger.debug("ProxyMessage received {}", proxyMessage.getType());
         switch (proxyMessage.getType()) {
-            case ProxyMessage.TYPE_HEARTBEAT:
-                handleHeartbeatMessage(ctx, proxyMessage);
-                break;
-            case ProxyMessage.TYPE_AUTH:
-                handleAuthMessage(ctx, proxyMessage);
-                break;
-            case ProxyMessage.TYPE_CONNECT:
-                handleConnectMessage(ctx, proxyMessage);
-                break;
-            case ProxyMessage.TYPE_DISCONNECT:
-                handleDisconnectMessage(ctx, proxyMessage);
-                break;
-            case ProxyMessage.TYPE_TRANSFER:
-                handleTransferMessage(ctx, proxyMessage);
-                break;
-            case ProxyMessage.TYPE_WRITE_CONTROL:
-                handleWriteControlMessage(ctx, proxyMessage);
-                break;
-            default:
-                break;
+        case ProxyMessage.TYPE_HEARTBEAT:
+            handleHeartbeatMessage(ctx, proxyMessage);
+            break;
+        case ProxyMessage.TYPE_AUTH:
+            handleAuthMessage(ctx, proxyMessage);
+            break;
+        case ProxyMessage.TYPE_CONNECT:
+            handleConnectMessage(ctx, proxyMessage);
+            break;
+        case ProxyMessage.TYPE_DISCONNECT:
+            handleDisconnectMessage(ctx, proxyMessage);
+            break;
+        case ProxyMessage.TYPE_TRANSFER:
+            handleTransferMessage(ctx, proxyMessage);
+            break;
+        case ProxyMessage.TYPE_WRITE_CONTROL:
+            handleWriteControlMessage(ctx, proxyMessage);
+            break;
+        default:
+            break;
         }
     }
 
@@ -100,8 +100,8 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
         String clientKey = proxyMessage.getUri();
         List<Integer> ports = ProxyConfig.getInstance().getClientInetPorts(clientKey);
         if (ports == null) {
-            logger.info("error clientKey {}, close channel", clientKey);
-            ctx.channel().close();
+            logger.info("error clientKey {}, {}", clientKey, ctx.channel());
+            // ctx.channel().close();
             return;
         }
 

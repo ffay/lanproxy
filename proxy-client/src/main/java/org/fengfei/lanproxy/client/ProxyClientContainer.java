@@ -2,6 +2,9 @@ package org.fengfei.lanproxy.client;
 
 import java.util.Arrays;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
+
 import org.fengfei.lanproxy.client.handlers.ClientChannelHandler;
 import org.fengfei.lanproxy.client.handlers.RealServerChannelHandler;
 import org.fengfei.lanproxy.client.listener.ChannelStatusListener;
@@ -18,11 +21,13 @@ import org.slf4j.LoggerFactory;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.ssl.SslHandler;
 
 public class ProxyClientContainer implements Container, ChannelStatusListener {
 
@@ -46,6 +51,8 @@ public class ProxyClientContainer implements Container, ChannelStatusListener {
 
     private Config config = Config.getInstance();
 
+    private SSLContext sslContext;
+
     public ProxyClientContainer() {
         workerGroup = new NioEventLoopGroup();
         realServerBootstrap = new Bootstrap();
@@ -66,6 +73,13 @@ public class ProxyClientContainer implements Container, ChannelStatusListener {
 
             @Override
             public void initChannel(SocketChannel ch) throws Exception {
+                if (Config.getInstance().getBooleanValue("ssl.enable", false)) {
+                    if (sslContext == null) {
+                        sslContext = SslContextCreator.createSSLContext();
+                    }
+
+                    ch.pipeline().addLast(createSslHandler(sslContext));
+                }
                 ch.pipeline().addLast(new ProxyMessageDecoder(MAX_FRAME_LENGTH, LENGTH_FIELD_OFFSET,
                         LENGTH_FIELD_LENGTH, LENGTH_ADJUSTMENT, INITIAL_BYTES_TO_STRIP));
                 ch.pipeline().addLast(new ProxyMessageEncoder());
@@ -79,6 +93,12 @@ public class ProxyClientContainer implements Container, ChannelStatusListener {
     @Override
     public void start() {
         connectProxyServer();
+    }
+
+    private ChannelHandler createSslHandler(SSLContext sslContext) {
+        SSLEngine sslEngine = sslContext.createSSLEngine();
+        sslEngine.setUseClientMode(true);
+        return new SslHandler(sslEngine);
     }
 
     private void connectProxyServer() {

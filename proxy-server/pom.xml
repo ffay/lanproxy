@@ -34,6 +34,7 @@
                         <exclude>*.properties</exclude>
                         <exclude>*.sh</exclude>
                         <exclude>*.bat</exclude>
+                        <exclude>*.jks</exclude>
                     </excludes>
                 </configuration>
             </plugin>
@@ -77,6 +78,7 @@
                                     <includes>
                                         <include>*.properties</include>
                                         <include>*.json</include>
+                                        <include>*.jks</include>
                                     </includes>
                                 </resource>
                             </resources>
