@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.fengfei.lanproxy.common.Config;
 import org.fengfei.lanproxy.common.JsonUtil;
@@ -93,9 +94,8 @@ public class ProxyConfig implements Serializable {
         this.configAdminUsername = Config.getInstance().getStringValue("config.admin.username");
         this.configAdminPassword = Config.getInstance().getStringValue("config.admin.password");
 
-        logger.info(
-                "config init serverBind {}, serverPort {}, configServerBind {}, configServerPort {}, configAdminUsername {}, configAdminPassword {}",
-                serverBind, serverPort, configServerBind, configServerPort, configAdminUsername, configAdminPassword);
+        logger.info("config init serverBind {}, serverPort {}, configServerBind {}, configServerPort {}, configAdminUsername {}, configAdminPassword {}", serverBind, serverPort, configServerBind,
+                configServerPort, configAdminUsername, configAdminPassword);
 
         update(null);
     }
@@ -251,6 +251,15 @@ public class ProxyConfig implements Serializable {
      */
     public List<Integer> getClientInetPorts(String clientKey) {
         return clientInetPortMapping.get(clientKey);
+    }
+
+    /**
+     * 获取所有的clientKey
+     *
+     * @return
+     */
+    public Set<String> getClientKeySet() {
+        return clientInetPortMapping.keySet();
     }
 
     /**

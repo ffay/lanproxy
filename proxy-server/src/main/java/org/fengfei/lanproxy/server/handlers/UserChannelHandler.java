@@ -61,14 +61,14 @@ public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
             ctx.channel().close();
         } else {
             String userId = newUserId();
-
+            String lanInfo = ProxyConfig.getInstance().getLanInfo(sa.getPort());
             // 用户连接到代理服务器时，设置用户连接不可读，等待代理后端服务器连接成功后再改变为可读状态
             ProxyChannelManager.setUserChannelReadability(userChannel, false, proxyChannel.isWritable());
             ProxyChannelManager.addUserChannel(proxyChannel, userId, userChannel);
             ProxyMessage proxyMessage = new ProxyMessage();
             proxyMessage.setType(ProxyMessage.TYPE_CONNECT);
             proxyMessage.setUri(userId);
-            proxyMessage.setData(ProxyConfig.getInstance().getLanInfo(sa.getPort()).getBytes());
+            proxyMessage.setData(lanInfo.getBytes());
             proxyChannel.writeAndFlush(proxyMessage);
         }
         super.channelActive(ctx);
