@@ -1,9 +1,5 @@
 package org.fengfei.lanproxy.server;
 
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelOption;
-import io.netty.util.AttributeKey;
-
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -18,6 +14,10 @@ import org.fengfei.lanproxy.server.config.ProxyConfig;
 import org.fengfei.lanproxy.server.config.ProxyConfig.ConfigChangedListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelOption;
+import io.netty.util.AttributeKey;
 
 /**
  * 代理服务连接管理（代理客户端连接+用户请求连接）
@@ -39,11 +39,15 @@ public class ProxyChannelManager {
 
     private static final AttributeKey<String> CHANNEL_CLIENT_KEY = AttributeKey.newInstance("channel_client_key");
 
-    private static final AttributeKey<Boolean> PROXY_CHANNEL_WRITEABLE = AttributeKey.newInstance("proxy_channel_writeable");
+    private static final AttributeKey<Boolean> PROXY_CHANNEL_WRITEABLE = AttributeKey
+            .newInstance("proxy_channel_writeable");
 
-    private static final AttributeKey<Boolean> REAL_BACKEND_SERVER_CHANNEL_WRITEABLE = AttributeKey.newInstance("real_backend_server_channel_writeable");
+    private static final AttributeKey<Boolean> REAL_BACKEND_SERVER_CHANNEL_WRITEABLE = AttributeKey
+            .newInstance("real_backend_server_channel_writeable");
 
-    private static Map<Integer, Channel> proxyChannels = new ConcurrentHashMap<Integer, Channel>();
+    private static Map<Integer, Channel> portChannelMapping = new ConcurrentHashMap<Integer, Channel>();
+
+    private static Map<String, Channel> proxyChannels = new ConcurrentHashMap<String, Channel>();
 
     static {
         ProxyConfig.getInstance().addConfigChangedListener(new ConfigChangedListener() {
@@ -53,7 +57,7 @@ public class ProxyChannelManager {
              */
             @Override
             public synchronized void onChanged() {
-                Iterator<Entry<Integer, Channel>> ite = proxyChannels.entrySet().iterator();
+                Iterator<Entry<String, Channel>> ite = proxyChannels.entrySet().iterator();
                 Set<Channel> proxyChannelSet = new HashSet<Channel>();
                 while (ite.hasNext()) {
                     Channel proxyChannel = ite.next().getValue();
@@ -75,15 +79,16 @@ public class ProxyChannelManager {
                     }
 
                     if (proxyChannel.isActive()) {
-                        List<Integer> inetPorts = new ArrayList<Integer>(ProxyConfig.getInstance().getClientInetPorts(clientKey));
+                        List<Integer> inetPorts = new ArrayList<Integer>(
+                                ProxyConfig.getInstance().getClientInetPorts(clientKey));
                         Set<Integer> inetPortSet = new HashSet<Integer>(inetPorts);
                         List<Integer> channelInetPorts = new ArrayList<Integer>(proxyChannel.attr(CHANNEL_PORT).get());
 
-                        synchronized (proxyChannels) {
+                        synchronized (portChannelMapping) {
 
                             // 移除旧的连接映射关系
                             for (int chanelInetPort : channelInetPorts) {
-                                Channel channel = proxyChannels.get(chanelInetPort);
+                                Channel channel = portChannelMapping.get(chanelInetPort);
                                 if (proxyChannel == null) {
                                     continue;
                                 }
@@ -93,7 +98,7 @@ public class ProxyChannelManager {
                                     if (!inetPortSet.contains(chanelInetPort)) {
 
                                         // 移除新配置中不包含的端口
-                                        proxyChannels.remove(chanelInetPort);
+                                        portChannelMapping.remove(chanelInetPort);
                                         proxyChannel.attr(CHANNEL_PORT).get().remove(new Integer(chanelInetPort));
                                     } else {
 
@@ -105,7 +110,7 @@ public class ProxyChannelManager {
 
                             // 将新配置中增加的外网端口写入到映射配置中
                             for (int inetPort : inetPorts) {
-                                proxyChannels.put(inetPort, proxyChannel);
+                                portChannelMapping.put(inetPort, proxyChannel);
                                 proxyChannel.attr(CHANNEL_PORT).get().add(inetPort);
                             }
 
@@ -116,9 +121,10 @@ public class ProxyChannelManager {
 
                 ite = proxyChannels.entrySet().iterator();
                 while (ite.hasNext()) {
-                    Entry<Integer, Channel> entry = ite.next();
+                    Entry<String, Channel> entry = ite.next();
                     Channel proxyChannel = entry.getValue();
-                    logger.info("proxyChannel config, {}, {}, {} ,{}", entry.getKey(), proxyChannel, getUserChannels(proxyChannel).size(), proxyChannel.attr(CHANNEL_PORT).get());
+                    logger.info("proxyChannel config, {}, {}, {} ,{}", entry.getKey(), proxyChannel,
+                            getUserChannels(proxyChannel).size(), proxyChannel.attr(CHANNEL_PORT).get());
                 }
             }
 
@@ -163,21 +169,22 @@ public class ProxyChannelManager {
 
         // 客户端（proxy-client）相对较少，这里同步的比较重
         // 保证服务器对外端口与客户端到服务器的连接关系在临界情况时调用removeChannel(Channel channel)时不出问题
-        synchronized (proxyChannels) {
+        synchronized (portChannelMapping) {
 
             //
             for (int port : ports) {
-                proxyChannels.put(port, channel);
+                portChannelMapping.put(port, channel);
             }
         }
 
         channel.attr(CHANNEL_PORT).set(ports);
         channel.attr(CHANNEL_CLIENT_KEY).set(clientKey);
         channel.attr(USER_CHANNELS).set(new ConcurrentHashMap<String, Channel>());
+        proxyChannels.put(clientKey, channel);
     }
 
     /**
-     * 代理客户端连接断开后清楚关系
+     * 代理客户端连接断开后清除关系
      *
      * @param channel
      */
@@ -187,16 +194,22 @@ public class ProxyChannelManager {
             return;
         }
 
+        String clientKey = channel.attr(CHANNEL_CLIENT_KEY).get();
+        Channel channel0 = proxyChannels.remove(clientKey);
+        if (channel != channel0) {
+            proxyChannels.put(clientKey, channel);
+        }
+
         List<Integer> ports = channel.attr(CHANNEL_PORT).get();
         for (int port : ports) {
-            Channel proxyChannel = proxyChannels.remove(port);
+            Channel proxyChannel = portChannelMapping.remove(port);
             if (proxyChannel == null) {
                 continue;
             }
 
             // 在执行断连之前新的连接已经连上来了
             if (proxyChannel != channel) {
-                proxyChannels.put(port, proxyChannel);
+                portChannelMapping.put(port, proxyChannel);
             }
         }
 
@@ -217,7 +230,7 @@ public class ProxyChannelManager {
     }
 
     public static Channel getChannel(Integer port) {
-        return proxyChannels.get(port);
+        return portChannelMapping.get(port);
     }
 
     /**
@@ -296,8 +309,10 @@ public class ProxyChannelManager {
      * @param client
      * @param proxy
      */
-    public static void setUserChannelReadability(Channel userChannel, Boolean realBackendServerChannelWriteability, Boolean proxyChannelWriteability) {
-        logger.info("update user channel readability, {} {} {}", userChannel, realBackendServerChannelWriteability, proxyChannelWriteability);
+    public static void setUserChannelReadability(Channel userChannel, Boolean realBackendServerChannelWriteability,
+            Boolean proxyChannelWriteability) {
+        logger.info("update user channel readability, {} {} {}", userChannel, realBackendServerChannelWriteability,
+                proxyChannelWriteability);
         synchronized (userChannel) {
             if (realBackendServerChannelWriteability != null) {
                 userChannel.attr(REAL_BACKEND_SERVER_CHANNEL_WRITEABLE).set(realBackendServerChannelWriteability);
@@ -307,7 +322,8 @@ public class ProxyChannelManager {
                 userChannel.attr(PROXY_CHANNEL_WRITEABLE).set(proxyChannelWriteability);
             }
 
-            if (userChannel.attr(REAL_BACKEND_SERVER_CHANNEL_WRITEABLE).get() && userChannel.attr(PROXY_CHANNEL_WRITEABLE).get()) {
+            if (userChannel.attr(REAL_BACKEND_SERVER_CHANNEL_WRITEABLE).get()
+                    && userChannel.attr(PROXY_CHANNEL_WRITEABLE).get()) {
 
                 // 代理客户端与后端服务器连接状态均为可写时，用户连接状态为可读
                 userChannel.config().setOption(ChannelOption.AUTO_READ, true);

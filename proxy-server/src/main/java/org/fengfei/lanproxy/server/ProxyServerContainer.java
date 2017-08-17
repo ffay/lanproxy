@@ -18,6 +18,7 @@ import org.fengfei.lanproxy.server.config.ProxyConfig.ConfigChangedListener;
 import org.fengfei.lanproxy.server.config.web.WebConfigContainer;
 import org.fengfei.lanproxy.server.handlers.ServerChannelHandler;
 import org.fengfei.lanproxy.server.handlers.UserChannelHandler;
+import org.fengfei.lanproxy.server.metrics.handler.BytesMetricsHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -136,6 +137,7 @@ public class ProxyServerContainer implements Container, ConfigChangedListener {
                     @Override
                     public void initChannel(SocketChannel ch) throws Exception {
                         ch.pipeline().addLast(new IdleCheckHandler(IdleCheckHandler.USER_CHANNEL_READ_IDLE_TIME, 0, 0));
+                        ch.pipeline().addFirst(new BytesMetricsHandler());
                         ch.pipeline().addLast(new UserChannelHandler());
                     }
                 });

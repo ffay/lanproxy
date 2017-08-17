@@ -12,6 +12,7 @@ import org.fengfei.lanproxy.server.config.web.RequestHandler;
 import org.fengfei.lanproxy.server.config.web.RequestMiddleware;
 import org.fengfei.lanproxy.server.config.web.ResponseInfo;
 import org.fengfei.lanproxy.server.config.web.exception.ContextException;
+import org.fengfei.lanproxy.server.metrics.MetricsCollector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -133,6 +134,22 @@ public class RouteConfig {
             public ResponseInfo request(FullHttpRequest request) {
                 token = null;
                 return ResponseInfo.build(ResponseInfo.CODE_OK, "success");
+            }
+        });
+
+        ApiRoute.addRoute("/metrics/get", new RequestHandler() {
+
+            @Override
+            public ResponseInfo request(FullHttpRequest request) {
+                return ResponseInfo.build(MetricsCollector.getAllMetrics());
+            }
+        });
+
+        ApiRoute.addRoute("/metrics/getandreset", new RequestHandler() {
+
+            @Override
+            public ResponseInfo request(FullHttpRequest request) {
+                return ResponseInfo.build(MetricsCollector.getAndResetAllMetrics());
             }
         });
     }
