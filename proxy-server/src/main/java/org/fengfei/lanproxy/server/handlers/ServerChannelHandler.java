@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
@@ -26,26 +27,26 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
     protected void channelRead0(ChannelHandlerContext ctx, ProxyMessage proxyMessage) throws Exception {
         logger.debug("ProxyMessage received {}", proxyMessage.getType());
         switch (proxyMessage.getType()) {
-            case ProxyMessage.TYPE_HEARTBEAT:
-                handleHeartbeatMessage(ctx, proxyMessage);
-                break;
-            case ProxyMessage.TYPE_AUTH:
-                handleAuthMessage(ctx, proxyMessage);
-                break;
-            case ProxyMessage.TYPE_CONNECT:
-                handleConnectMessage(ctx, proxyMessage);
-                break;
-            case ProxyMessage.TYPE_DISCONNECT:
-                handleDisconnectMessage(ctx, proxyMessage);
-                break;
-            case ProxyMessage.TYPE_TRANSFER:
-                handleTransferMessage(ctx, proxyMessage);
-                break;
-            case ProxyMessage.TYPE_WRITE_CONTROL:
-                handleWriteControlMessage(ctx, proxyMessage);
-                break;
-            default:
-                break;
+        case ProxyMessage.TYPE_HEARTBEAT:
+            handleHeartbeatMessage(ctx, proxyMessage);
+            break;
+        case ProxyMessage.TYPE_AUTH:
+            handleAuthMessage(ctx, proxyMessage);
+            break;
+        case ProxyMessage.TYPE_CONNECT:
+            handleConnectMessage(ctx, proxyMessage);
+            break;
+        case ProxyMessage.TYPE_DISCONNECT:
+            handleDisconnectMessage(ctx, proxyMessage);
+            break;
+        case ProxyMessage.TYPE_TRANSFER:
+            handleTransferMessage(ctx, proxyMessage);
+            break;
+        case ProxyMessage.TYPE_WRITE_CONTROL:
+            handleWriteControlMessage(ctx, proxyMessage);
+            break;
+        default:
+            break;
         }
     }
 
@@ -74,7 +75,9 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
         String userId = proxyMessage.getUri();
         Channel userChannel = ProxyChannelManager.removeUserChannel(ctx.channel(), userId);
         if (userChannel != null) {
-            userChannel.close();
+            // 数据发送完成后再关闭连接，解决http1.0数据传输问题
+            ByteBuf buf = ctx.alloc().buffer(0);
+            userChannel.writeAndFlush(buf).addListener(ChannelFutureListener.CLOSE);
         }
     }
 
