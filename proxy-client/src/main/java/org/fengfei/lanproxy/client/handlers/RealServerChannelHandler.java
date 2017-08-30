@@ -49,6 +49,7 @@ public class RealServerChannelHandler extends SimpleChannelInboundHandler<ByteBu
         ClientChannelMannager.removeRealServerChannel(userId);
         Channel channel = ClientChannelMannager.getChannel();
         if (channel != null) {
+            logger.debug("channelInactive, {}", realServerChannel);
             ProxyMessage proxyMessage = new ProxyMessage();
             proxyMessage.setType(ProxyMessage.TYPE_DISCONNECT);
             proxyMessage.setUri(userId);

@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -36,20 +37,20 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
     protected void channelRead0(ChannelHandlerContext ctx, ProxyMessage proxyMessage) throws Exception {
         logger.debug("recieved proxy message, type is {}", proxyMessage.getType());
         switch (proxyMessage.getType()) {
-            case ProxyMessage.TYPE_CONNECT:
-                handleConnectMessage(ctx, proxyMessage);
-                break;
-            case ProxyMessage.TYPE_DISCONNECT:
-                handleDisconnectMessage(ctx, proxyMessage);
-                break;
-            case ProxyMessage.TYPE_TRANSFER:
-                handleTransferMessage(ctx, proxyMessage);
-                break;
-            case ProxyMessage.TYPE_WRITE_CONTROL:
-                handleWriteControlMessage(ctx, proxyMessage);
-                break;
-            default:
-                break;
+        case ProxyMessage.TYPE_CONNECT:
+            handleConnectMessage(ctx, proxyMessage);
+            break;
+        case ProxyMessage.TYPE_DISCONNECT:
+            handleDisconnectMessage(ctx, proxyMessage);
+            break;
+        case ProxyMessage.TYPE_TRANSFER:
+            handleTransferMessage(ctx, proxyMessage);
+            break;
+        case ProxyMessage.TYPE_WRITE_CONTROL:
+            handleWriteControlMessage(ctx, proxyMessage);
+            break;
+        default:
+            break;
         }
     }
 
@@ -75,9 +76,10 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
 
     private void handleDisconnectMessage(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
         String userId = proxyMessage.getUri();
-        Channel userChannel = ClientChannelMannager.removeRealServerChannel(userId);
-        if (userChannel != null) {
-            userChannel.close();
+        Channel realServerChannel = ClientChannelMannager.removeRealServerChannel(userId);
+        logger.debug("handleDisconnectMessage, {} {}", userId, realServerChannel);
+        if (realServerChannel != null) {
+            realServerChannel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
         }
     }
 
@@ -93,8 +95,10 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
             public void operationComplete(ChannelFuture future) throws Exception {
                 if (future.isSuccess()) {
                     Channel realServerChannel = future.channel();
-                    ClientChannelMannager.setRealServerChannelReadability(realServerChannel, true,
+                    logger.debug("connect realserver success, {}, clientChannelWriteable {}", realServerChannel,
                             channel.isWritable());
+                    ClientChannelMannager.setRealServerChannelReadability(realServerChannel, channel.isWritable(),
+                            true);
                     ClientChannelMannager.addRealServerChannel(userId, realServerChannel);
                     ClientChannelMannager.setRealServerChannelUserId(realServerChannel, userId);
                     ProxyMessage proxyMessage = new ProxyMessage();

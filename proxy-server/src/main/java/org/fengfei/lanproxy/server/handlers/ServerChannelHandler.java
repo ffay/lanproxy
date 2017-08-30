@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -76,8 +77,7 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
         Channel userChannel = ProxyChannelManager.removeUserChannel(ctx.channel(), userId);
         if (userChannel != null) {
             // 数据发送完成后再关闭连接，解决http1.0数据传输问题
-            ByteBuf buf = ctx.alloc().buffer(0);
-            userChannel.writeAndFlush(buf).addListener(ChannelFutureListener.CLOSE);
+            userChannel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
         }
     }
 
