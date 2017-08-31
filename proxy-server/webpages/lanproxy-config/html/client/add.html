@@ -49,8 +49,6 @@ $(".add").click(function(){
         if (data.code == 20000) {
             layer.alert('客户端添加成功', function(index){
                 layer.close(index);
-                $("input[name='name']").val("");
-                $("input[name='clientKey']").val("");
                 location.reload();
             });
         }

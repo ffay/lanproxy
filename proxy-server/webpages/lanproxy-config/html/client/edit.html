@@ -39,7 +39,7 @@ $(".update").click(function(){
         if (data.code == 20000) {
             layer.alert('更新成功', function(index){
                 layer.close(index);
-                load_page("html/client/list.html");
+                location.reload();
             }); 
         }
     });
