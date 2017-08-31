@@ -51,7 +51,7 @@ body :-ms-input-placeholder {
 }
 
 .wrapper {
-	background: #50a3a2;
+	background: #393D49!important;
 	background: -webkit-linear-gradient(top left, #50a3a2 0%, #53e3a6 100%);
 	background: linear-gradient(to bottom right, #50a3a2 0%, #53e3a6 100%);
 	opacity: 0.8;
@@ -169,7 +169,7 @@ body :-ms-input-placeholder {
 				success : function(data) {
 					if (data.code == 20000) {
 						setCookie("token", data.data);
-						window.location.href = "/config.html";
+						window.location.href = "/lanproxy-config/";
 					}
 				},
 				error : function(e) {

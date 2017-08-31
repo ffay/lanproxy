@@ -1,0 +1,70 @@
+<div class="layui-tab layui-tab-brief">
+	<ul class="layui-tab-title site-demo-title">
+		<li class="layui-this tab-title">代理配置列表</li>
+	</ul>
+	<div class="main-content"></div>
+	<div class="layui-input-block" style="float: left; margin-left: 15px;">
+		<button class="layui-btn mapping-add">添加配置</button>
+	</div>
+</div>
+<script>
+    $(".tab-title").html(clientList[clientIndex].name+" - 代理配置");
+	var html = template($("#mapping-tpl").html(), {
+		data : clientList[clientIndex].proxyMappings
+	});
+	$(".main-content").html(html);
+	$(".mapping-config").click(function() {
+		window.clientIndex = $(this).attr("data-index");
+		load_page("html/lan/list.html");
+	});
+	$(".mapping-edit").click(function() {
+		window.mappingIndex = $(this).attr("data-index");
+		load_page("html/lan/edit.html");
+	});
+	$(".mapping-delete").click(function() {
+		var mappingIndex = $(this).attr("data-index");
+		layer.confirm('确定删除？', function(i) {
+			layer.close(i);
+			clientList[clientIndex].proxyMappings.splice(mappingIndex, 1);
+			api_invoke("/config/update", clientList, function(data) {
+				if (data.code != 20000) {
+					layer.alert(data.message);
+				} else {
+					load_page("html/lan/list.html");
+				}
+			})
+		});
+	});
+	$(".back").click(function() {
+		load_page("html/client/list.html");
+	});
+
+	$(".mapping-add").click(function() {
+		load_page("html/lan/add.html");
+	});
+</script>
+<script id="mapping-tpl" type="text/html">
+<table class="layui-table" lay-skin="line">
+    <thead>
+        <tr>
+            <th>代理名称</th>
+            <th>公网出口端口</th>
+            <th>后端IP端口</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+    <%for(var i = 0; i < data.length; i++) {%>
+        <tr>
+            <td><%:=data[i].name%></td>
+            <td><%:=data[i].inetPort%></td>
+            <td><%:=data[i].lan%></td>
+            <td>
+              <a data-index="<%:=i%>" class="layui-btn layui-btn-mini mapping-edit">编辑</a>
+              <a data-index="<%:=i%>" class="layui-btn layui-btn-danger layui-btn-mini mapping-delete">删除</a>
+            </td>
+        </tr>
+    <%}%>
+    </tbody>
+</table>
+</script>

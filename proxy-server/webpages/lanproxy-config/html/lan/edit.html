@@ -1,0 +1,74 @@
+<div class="layui-tab layui-tab-brief">
+    <ul class="layui-tab-title site-demo-title">
+        <li class="layui-this">添加代理</li>
+    </ul>
+    <div class="main-content">
+      <div class="layui-form-item">
+	    <label class="layui-form-label">代理名称</label>
+	    <div class="layui-input-block">
+	      <input type="text" name="name" autocomplete="off" placeholder="请输入代理备注名称" class="layui-input">
+	    </div>
+	  </div>
+	  <div class="layui-form-item">
+        <label class="layui-form-label">公网端口</label>
+        <div class="layui-input-block">
+          <input type="text" name="inetPort" autocomplete="off" placeholder="请输入公网出口端口，请确保端口没有被其他程序占用" class="layui-input">
+        </div>
+      </div>
+      <div class="layui-form-item">
+        <label class="layui-form-label">代理IP端口</label>
+        <div class="layui-input-block">
+          <input type="text" name="lan" autocomplete="off" placeholder="请输入后端代理信息，格式：127.0.0.1:80" class="layui-input">
+        </div>
+      </div>
+       <div class="layui-form-item">
+	    <div class="layui-input-block">
+	      <button class="layui-btn update">提交更新</button>
+	      <button class="layui-btn layui-btn-primary back">返回</button>
+	    </div>
+	  </div>
+    </div>
+</div>
+<script>
+$(function(){
+	$("input[name='name']").val(clientList[clientIndex].proxyMappings[mappingIndex].name);
+	$("input[name='inetPort']").val(clientList[clientIndex].proxyMappings[mappingIndex].inetPort);
+	$("input[name='lan']").val(clientList[clientIndex].proxyMappings[mappingIndex].lan);
+});
+$(".update").click(function(){
+    var name = $("input[name='name']").val();
+    if(name == ""){
+    	layer.alert("请输入代理备注名称");
+    	return;
+    }
+    var inetPort = $("input[name='inetPort']").val();
+    if(inetPort == ""){
+        layer.alert("请输入公网出口端口");
+        return;
+    }
+    var lan = $("input[name='lan']").val();
+    if(lan == ""){
+        layer.alert("请输入后端代理信息");
+        return;
+    }
+
+    clientList[clientIndex].proxyMappings[mappingIndex]= {
+    	name:name,
+    	inetPort:inetPort,
+    	lan:lan
+    };
+
+    api_invoke("/config/update", clientList, function(data) {
+        if (data.code == 20000) {
+            layer.alert('更新成功', function(index){
+                layer.close(index);
+                load_page("html/lan/list.html");
+            }); 
+        }
+    });
+});
+
+$(".back").click(function(){
+	load_page("html/lan/list.html");
+});
+</script>

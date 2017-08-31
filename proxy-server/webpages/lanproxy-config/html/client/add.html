@@ -1,0 +1,77 @@
+<div class="layui-tab layui-tab-brief">
+    <ul class="layui-tab-title site-demo-title">
+        <li class="layui-this">编辑客户端</li>
+    </ul>
+    <div class="main-content">
+      <div class="layui-form-item">
+	    <label class="layui-form-label">备注名称</label>
+	    <div class="layui-input-inline">
+	      <input type="text" name="name" autocomplete="off" placeholder="请输入客户端备注名称" class="layui-input">
+	    </div>
+	  </div>
+	  <div class="layui-form-item">
+        <label class="layui-form-label">通信密钥</label>
+        <div class="layui-input-inline">
+          <input type="text" name="clientKey" autocomplete="off" placeholder="请输入客户端通信密钥" class="layui-input">
+        </div>
+        <div class="layui-form-mid"><a class="layui-btn layui-btn-mini random-key random">生成随机密钥</a></div>
+      </div>
+       <div class="layui-form-item">
+	    <div class="layui-input-block">
+	      <button class="layui-btn add">提交添加</button>
+	    </div>
+	  </div>
+    </div>
+</div>
+<script>
+$(".random").click(function(){
+	$("input[name='clientKey']").val(uuid());
+});
+
+$(".add").click(function(){
+    var name = $("input[name='name']").val();
+    if(name == ""){
+    	layer.alert("请输入客户端备注名称");
+    	return;
+    }
+    var clientKey = $("input[name='clientKey']").val();
+    if(clientKey == ""){
+        layer.alert("请输入客户端密钥");
+        return;
+    }
+    clientList.push({
+    	name:name,
+    	clientKey:clientKey,
+    	proxyMappings:[]
+    });
+
+    api_invoke("/config/update", clientList, function(data) {
+        if (data.code == 20000) {
+            layer.alert('客户端添加成功', function(index){
+                layer.close(index);
+                $("input[name='name']").val("");
+                $("input[name='clientKey']").val("");
+                location.reload();
+            });
+        }
+    });
+});
+
+$(".back").click(function(){
+	load_page("html/client/list.html");
+});
+
+function uuid() {
+	var s = [];
+	var hexDigits = "0123456789abcdef";
+	for (var i = 0; i < 36; i++) {
+	  s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
+	}
+	s[14] = "4"; // bits 12-15 of the time_hi_and_version field to 0010
+	s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1); // bits 6-7 of the clock_seq_hi_and_reserved to 01
+	s[8] = s[13] = s[18] = s[23] = "";
+	
+	var uuid = s.join("");
+	return uuid;
+}
+</script>

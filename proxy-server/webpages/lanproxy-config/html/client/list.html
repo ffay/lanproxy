@@ -1,0 +1,66 @@
+<div class="layui-tab layui-tab-brief">
+	<ul class="layui-tab-title site-demo-title">
+		<li class="layui-this">客户端列表</li>
+	</ul>
+	<div class="main-content"></div>
+</div>
+<script>
+	window.clientList = [];
+	api_invoke("/config/detail", {}, function(data) {
+		if (data.code == 20000) {
+			clientList = data.data;
+			var html = template($("#client-tpl").html(), data);
+			$(".main-content").html(html);
+			$(".mapping-config").click(function() {
+		        window.clientIndex = $(this).attr("data-index");
+		        load_page("html/lan/list.html");
+			});
+			$(".client-edit").click(function() {
+				window.clientIndex = $(this).attr("data-index");
+				load_page("html/client/edit.html");
+			});
+			$(".client-delete").click(function() {
+				window.clientIndex = $(this).attr("data-index");
+				layer.confirm('确定删除？', function(i) {
+					layer.close(i);
+					clientList.splice(clientIndex, 1);
+					api_invoke("/config/update", clientList, function(data) {
+						if (data.code != 20000) {
+							layer.alert(data.message);
+						} else {
+	                         location.reload();
+						}
+					})
+				});
+			});
+		} else {
+			alert(data.message);
+		}
+	});
+</script>
+<script id="client-tpl" type="text/html">
+<table class="layui-table" lay-skin="line">
+    <thead>
+        <tr>
+            <th>客户端名称</th>
+            <th>密钥(客户端client.key配置该值)</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+    <%for(var i = 0; i < data.length; i++) {%>
+        <tr>
+            <td><%:=data[i].name%></td>
+            <td><%:=data[i].clientKey%></td>
+            <td>
+              <!--
+              <a data-index="<%:=i%>" class="layui-btn layui-btn-mini mapping-config">代理配置</a>
+              -->
+              <a data-index="<%:=i%>" class="layui-btn layui-btn-mini client-edit">编辑</a>
+              <a data-index="<%:=i%>" class="layui-btn layui-btn-danger layui-btn-mini client-delete">删除</a>
+            </td>
+        </tr>
+    <%}%>
+    </tbody>
+</table>
+</script>

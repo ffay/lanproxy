@@ -94,8 +94,9 @@ public class ProxyConfig implements Serializable {
         this.configAdminUsername = Config.getInstance().getStringValue("config.admin.username");
         this.configAdminPassword = Config.getInstance().getStringValue("config.admin.password");
 
-        logger.info("config init serverBind {}, serverPort {}, configServerBind {}, configServerPort {}, configAdminUsername {}, configAdminPassword {}", serverBind, serverPort, configServerBind,
-                configServerPort, configAdminUsername, configAdminPassword);
+        logger.info(
+                "config init serverBind {}, serverPort {}, configServerBind {}, configServerPort {}, configAdminUsername {}, configAdminPassword {}",
+                serverBind, serverPort, configServerBind, configServerPort, configAdminUsername, configAdminPassword);
 
         update(null);
     }
@@ -301,6 +302,9 @@ public class ProxyConfig implements Serializable {
 
         private static final long serialVersionUID = 1L;
 
+        /** 客户端备注名称 */
+        private String name;
+
         /** 代理客户端唯一标识key */
         private String clientKey;
 
@@ -323,6 +327,14 @@ public class ProxyConfig implements Serializable {
             this.proxyMappings = proxyMappings;
         }
 
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
     }
 
     /**
@@ -339,6 +351,9 @@ public class ProxyConfig implements Serializable {
         /** 需要代理的网络信息（代理客户端能够访问），格式 192.168.1.99:80 (必须带端口) */
         private String lan;
 
+        /** 备注名称 */
+        private String name;
+
         public Integer getInetPort() {
             return inetPort;
         }
@@ -353,6 +368,14 @@ public class ProxyConfig implements Serializable {
 
         public void setLan(String lan) {
             this.lan = lan;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
         }
 
     }

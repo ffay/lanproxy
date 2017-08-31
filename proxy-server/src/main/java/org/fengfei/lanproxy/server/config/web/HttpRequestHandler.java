@@ -79,6 +79,11 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
         uriPath = uriPath.equals("/") ? "/index.html" : uriPath;
         String path = PAGE_FOLDER + uriPath;
         File rfile = new File(path);
+        if (rfile.isDirectory()) {
+            path = path + "/index.html";
+            rfile = new File(path);
+        }
+
         if (!rfile.exists()) {
             status = HttpResponseStatus.NOT_FOUND;
             outputContent(ctx, request, status.code(), status.toString(), "text/html");
