@@ -46,9 +46,18 @@ $(".update").click(function(){
         layer.alert("请输入公网出口端口");
         return;
     }
+    if(!check_port(inetPort)){
+        layer.alert("端口格式错误");
+        return;
+    }
+
     var lan = $("input[name='lan']").val();
     if(lan == ""){
         layer.alert("请输入后端代理信息");
+        return;
+    }
+    if(!check_lan(lan)){
+        layer.alert("后端代理信息格式错误");
         return;
     }
 

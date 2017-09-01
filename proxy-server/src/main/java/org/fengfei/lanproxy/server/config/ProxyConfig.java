@@ -158,8 +158,8 @@ public class ProxyConfig implements Serializable {
      */
     public void update(String proxyMappingConfigJson) {
 
+        File file = new File(CONFIG_FILE);
         try {
-            File file = new File(CONFIG_FILE);
             if (proxyMappingConfigJson == null && file.exists()) {
                 InputStream in = new FileInputStream(file);
                 byte[] buf = new byte[1024];
@@ -171,11 +171,6 @@ public class ProxyConfig implements Serializable {
 
                 in.close();
                 proxyMappingConfigJson = new String(out.toByteArray());
-            } else if (proxyMappingConfigJson != null) {
-                FileOutputStream out = new FileOutputStream(file);
-                out.write(proxyMappingConfigJson.getBytes());
-                out.flush();
-                out.close();
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -192,8 +187,10 @@ public class ProxyConfig implements Serializable {
 
         // 构造端口映射关系
         for (Client client : clients) {
-
             String clientKey = client.getClientKey();
+            if (clientInetPortMapping.containsKey(clientKey)) {
+                throw new IllegalArgumentException("密钥同时作为客户端标识，不能重复： " + clientKey);
+            }
             List<ClientProxyMapping> mappings = client.getProxyMappings();
             List<Integer> ports = new ArrayList<Integer>();
             clientInetPortMapping.put(clientKey, ports);
@@ -201,7 +198,7 @@ public class ProxyConfig implements Serializable {
                 Integer port = mapping.getInetPort();
                 ports.add(port);
                 if (inetPortLanInfoMapping.containsKey(port)) {
-                    throw new IllegalArgumentException("duplicate inet port " + port);
+                    throw new IllegalArgumentException("一个公网端口只能映射一个后端信息，不能重复: " + port);
                 }
 
                 inetPortLanInfoMapping.put(port, mapping.getLan());
@@ -212,6 +209,15 @@ public class ProxyConfig implements Serializable {
         this.clientInetPortMapping = clientInetPortMapping;
         this.inetPortLanInfoMapping = inetPortLanInfoMapping;
         this.clients = clients;
+
+        try {
+            FileOutputStream out = new FileOutputStream(file);
+            out.write(proxyMappingConfigJson.getBytes());
+            out.flush();
+            out.close();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
         notifyconfigChangedListeners();
     }

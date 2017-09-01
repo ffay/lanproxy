@@ -1,0 +1,46 @@
+<div class="layui-tab layui-tab-brief">
+	<ul class="layui-tab-title site-demo-title">
+		<li class="layui-this tab-title">数据统计</li>
+	</ul>
+	<div class="main-content"></div>
+</div>
+<script>
+	function bytesToSize(bytes) {
+		if (bytes === 0)
+			return '0 B';
+		var k = 1000, // or 1024
+		sizes = [ 'B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB' ], i = Math
+				.floor(Math.log(bytes) / Math.log(k));
+
+		return (bytes / Math.pow(k, i)).toPrecision(3) + ' ' + sizes[i];
+	}
+
+	api_invoke("/metrics/get", {}, function(data) {
+		var html = template($("#stat-tpl").html(), {
+			data : data.data
+		});
+		$(".main-content").html(html);
+	});
+</script>
+<script id="stat-tpl" type="text/html">
+<table class="layui-table" lay-skin="line">
+    <thead>
+        <tr>
+            <th>出口端口</th>
+            <th>流入数据</th>
+            <th>流出数据</th>
+            <th>当前连接数</th>
+        </tr>
+    </thead>
+    <tbody>
+    <%for(var i = 0; i < data.length; i++) {%>
+        <tr>
+            <td><%:=data[i].port%></td>
+            <td><%:=bytesToSize(data[i].readBytes)%></td>
+            <td><%:=bytesToSize(data[i].wroteBytes)%></td>
+            <td><%:=data[i].channels%></td>
+        </tr>
+    <%}%>
+    </tbody>
+</table>
+</script>
