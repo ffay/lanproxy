@@ -17,14 +17,13 @@
 		<div class="layui-header">
 			<div class="layui-logo">LanProxy内网穿透</div>
 			<ul class="layui-nav layui-layout-right">
-				<li class="layui-nav-item"><a href="javascript:;" class="logout">退出</a></li>
+				<li class="layui-nav-item"><a href="javascript:;"
+					class="logout">退出</a></li>
 			</ul>
 		</div>
 
 		<div class="layui-side layui-bg-black">
-			<div class="layui-side-scroll">
-
-			</div>
+			<div class="layui-side-scroll"></div>
 		</div>
 
 		<div class="layui-body"></div>
@@ -38,96 +37,96 @@
 	<script src="/jquery/jquery-3.1.1.min.js"></script>
 	<script src="/template/template.js"></script>
 	<script>
-		layui.use('layer', function() {
-			window.layer = layui.layer;
-	        update_menu();
-		});
+        window.clientList = [];
+        layui.use('layer', function() {
+            window.layer = layui.layer;
+            update_menu();
+            load_page("html/client/list.html");
+        });
 
-		function api_invoke(uri, params, callback) {
-			var index = layer.load(1, {
-				  shade: [0.1,'#fff'] //0.1透明度的白色背景
-			});
-			$.ajax({
-				url : uri,
-				data : JSON.stringify(params),
-				type : 'POST',
-				cache : false,
-				dataType : 'json',
-				contentType : "application/json; charset=utf-8",
-				success : function(data) {
-					layer.close(index);
-					callback(data);
-				},
-				error : function(XMLHttpRequest, textStatus, errorThrown) {
-					layer.close(index);
-					if ("undefined" == typeof (XMLHttpRequest.responseJSON)) {
-						alert("System error, please try again later.");
-						return;
-					}
+        function api_invoke(uri, params, callback) {
+            var index = layer.load(1, {
+                shade : [ 0.1, '#fff' ]
+            });
+            $.ajax({
+                url : uri,
+                data : JSON.stringify(params),
+                type : 'POST',
+                cache : false,
+                dataType : 'json',
+                contentType : "application/json; charset=utf-8",
+                success : function(data) {
+                    layer.close(index);
+                    callback(data);
+                },
+                error : function(XMLHttpRequest, textStatus, errorThrown) {
+                    layer.close(index);
+                    if ("undefined" == typeof (XMLHttpRequest.responseJSON)) {
+                        layer.alert("System error, please try again later.");
+                        return;
+                    }
 
-					if(40100 == XMLHttpRequest.responseJSON.code){
-						location.href="/";
-					}else{
-		                layer.alert(XMLHttpRequest.responseJSON.message);
-		                api_invoke("/config/detail", {}, function(data) {
-		                    clientList = data.data;
-		                });
-					}
-				}
-			});
-		}
+                    if (40100 == XMLHttpRequest.responseJSON.code) {
+                        location.href = "/";
+                    } else {
+                        layer.alert(XMLHttpRequest.responseJSON.message);
+                        api_invoke("/config/detail", {}, function(data) {
+                            clientList = data.data;
+                        });
+                    }
+                }
+            });
+        }
 
-		function load_page(pageUrl) {
-			$(".layui-body").load(pageUrl);
-		}
-		
-		function check_lan(ip)   
-		{   
-		    var re =  /^(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5]):([0-9]|[1-9]\d{1,3}|[1-5]\d{4}|6[0-5]{2}[0-3][0-5])$/
-		    return re.test(ip);   
-		}
+        function load_page(pageUrl) {
+            $(".layui-body").load(pageUrl);
+        }
 
-		function check_port(port) 
-		{
-		    if (port>65535) {
-		        return false;
-		    }
-		    var re = /^[1-9]+[0-9]*]*$/
-		    return re.test(port);
-		}
+        function check_lan(ip) {
+            var re = /^(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5]):([0-9]|[1-9]\d{1,3}|[1-5]\d{4}|6[0-5]{2}[0-3][0-5])$/
+            return re.test(ip);
+        }
 
-		$(function() {
-			if (window.history && window.history.pushState) {
-				$(window).on('popstate', function() {
-					window.history.pushState('forward', null, '#');
-					window.history.forward(1);
-				});
-			}
-			if ('pushState' in history) {
-				window.history.pushState('forward', null, '#');
-				window.history.forward(1);
-			} else {
-				History.pushState('forward', null, '?state=2');
-				window.history.forward(1);
-			}
-			window.onhashchange = function() {
-				History.pushState('forward', null, '?state=1');
-			}
+        function check_port(port) {
+            if (port > 65535) {
+                return false;
+            }
+            var re = /^[1-9]+[0-9]*]*$/
+            return re.test(port);
+        }
 
-			load_page("html/client/list.html");
-			$(".logout").click(function(){
-				api_invoke("/logout", {}, function(data){
-					location.href = "/";
-				})
-			});
+        $(function() {
+            if (window.history && window.history.pushState) {
+                $(window).on('popstate', function() {
+                    window.history.pushState('forward', null, '#');
+                    window.history.forward(1);
+                });
+            }
+            if ('pushState' in history) {
+                window.history.pushState('forward', null, '#');
+                window.history.forward(1);
+            } else {
+                History.pushState('forward', null, '?state=2');
+                window.history.forward(1);
+            }
+            window.onhashchange = function() {
+                History.pushState('forward', null, '?state=1');
+            }
 
-			window.clientList = [];
-		});
-        function update_menu(){
+            $(".logout").click(function() {
+                api_invoke("/logout", {}, function(data) {
+                    location.href = "/";
+                })
+            });
+
+        });
+        function update_menu() {
             api_invoke("/config/detail", {}, function(data) {
                 if (data.code == 20000) {
                     clientList = data.data;
-                    var html = template($("#menu-tpl").html(), {list: clientList});
+                    var html = template($("#menu-tpl").html(), {
+                        list : clientList
+                    });
                     $(".layui-side-scroll").html(html);
                     layui.use('element', function() {
                         var element = layui.element;
@@ -141,7 +140,7 @@
                 }
             });
         }
-	</script>
+    </script>
 	<script id="menu-tpl" type="text/html">
     <ul class="layui-nav layui-nav-tree">
         <li class="layui-nav-item layui-nav-itemed"><a class=""
