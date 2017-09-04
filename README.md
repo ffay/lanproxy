@@ -6,7 +6,7 @@ lanproxy是一个将局域网个人电脑、服务器代理到公网的内网穿
 ### 相关地址
 
 - 主页 https://lanproxy.org
-- 发布包下载地址 https://git.oschina.net/fengfei/lanproxy/attach_files
+- 发布包下载地址 https://github.com/ffay/lanproxy/releases
 
 ### 实现方案
 
