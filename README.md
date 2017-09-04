@@ -31,7 +31,7 @@ server.bind=0.0.0.0
 server.port=4900
 
 #ssl相关配置
-server.ssl.enable=false
+server.ssl.enable=true
 server.ssl.bind=0.0.0.0
 server.ssl.port=4993
 server.ssl.jksPath=test.jks
@@ -61,20 +61,20 @@ config.admin.password=admin
 client的配置文件放置在conf目录中，配置 config.properties
 
 ```properties
-#与proxy-server通信认证标识秘钥，可在server配置中心查看
+
+#与在proxy-server配置后台创建客户端时填写的秘钥保持一致；没有服务器可以登录 https://lanproxy.org/ 创建客户端获取秘钥
 client.key=
-
-#proxy-server地址
-server.host=127.0.0.1
-
-#是否开启ssl通信，如果开启，server.port配置成对应的服务器端的ssl端口
-ssl.enable=false
+ssl.enable=true
 ssl.jksPath=test.jks
 ssl.keyStorePassword=123456
 
-#客户端与proxy-server通信端口
-#default ssl port is 4993
-server.port=4900
+#这里填写实际的proxy-server地址；没有服务器默认即可，自己有服务器的更换为自己的proxy-server（IP）地址
+server.host=client.lanproxy.org
+
+#proxy-server ssl默认端口4993，默认普通端口4900
+#ssl.enable=true时这里填写ssl端口，ssl.enable=false时这里填写普通端口
+server.port=4993
+
 ```
 
 #### 运行
