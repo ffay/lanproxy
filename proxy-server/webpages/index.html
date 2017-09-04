@@ -147,7 +147,7 @@ body :-ms-input-placeholder {
 	<!-- 代码 开始 -->
 	<div class="wrapper">
 		<div class="container">
-			<h1>LanProxy</h1>
+			<h1>LanProxy.org</h1>
 
 			<div class="form">
 				<input type="text" class="username" placeholder="用户名">
@@ -185,6 +185,12 @@ body :-ms-input-placeholder {
 			document.cookie = name + "=" + escape(value) + ";expires="
 					+ exp.toGMTString();
 		}
+		
+		$(document).keyup(function(event){
+			if(event.keyCode ==13){
+			    $("#login-button").trigger("click");
+			}
+		});
 	</script>
 	<!-- 代码 结束 -->
 

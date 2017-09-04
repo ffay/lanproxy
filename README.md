@@ -3,6 +3,11 @@ lanproxy
 
 lanproxy是一个将局域网个人电脑、服务器代理到公网的内网穿透工具，目前仅支持tcp流量转发，可支持任何tcp上层协议（访问内网网站、本地支付接口调试、ssh访问、远程桌面...）。目前市面上提供类似服务的有花生壳、TeamView、GoToMyCloud等等，但要使用第三方的公网服务器就必须为第三方付费，并且这些服务都有各种各样的限制，此外，由于数据包会流经第三方，因此对数据安全也是一大隐患。
 
+### 相关地址
+
+- 主页 https://lanproxy.org
+- 发布包下载地址 https://git.oschina.net/fengfei/lanproxy/attach_files
+
 ### 实现方案
 
 ![lanproxy](lanproxy.png)
@@ -57,7 +62,7 @@ client的配置文件放置在conf目录中，配置 config.properties
 
 ```properties
 #与proxy-server通信认证标识秘钥，可在server配置中心查看
-client.key=e3150ad72f8a47859b8c7ae6be2f1544
+client.key=
 
 #proxy-server地址
 server.host=127.0.0.1
