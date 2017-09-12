@@ -8,6 +8,11 @@
 	<version>0.1</version>
 	<name>lanproxy</name>
 	<url>http://maven.apache.org</url>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<maven.compiler.encoding>UTF-8</maven.compiler.encoding>
+	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>io.netty</groupId>
@@ -32,7 +37,7 @@
 		</dependency>
 	</dependencies>
 	<modules>
-    	<module>proxy-common</module>
+		<module>proxy-common</module>
 		<module>proxy-protocol</module>
 		<module>proxy-server</module>
 		<module>proxy-client</module>
@@ -46,6 +51,7 @@
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
+					<encoding>UTF-8</encoding>
 				</configuration>
 			</plugin>
 		</plugins>

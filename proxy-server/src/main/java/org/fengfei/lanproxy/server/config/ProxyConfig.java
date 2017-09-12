@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -170,7 +171,7 @@ public class ProxyConfig implements Serializable {
                 }
 
                 in.close();
-                proxyMappingConfigJson = new String(out.toByteArray());
+                proxyMappingConfigJson = new String(out.toByteArray(), Charset.forName("UTF-8"));
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -212,7 +213,7 @@ public class ProxyConfig implements Serializable {
 
         try {
             FileOutputStream out = new FileOutputStream(file);
-            out.write(proxyMappingConfigJson.getBytes());
+            out.write(proxyMappingConfigJson.getBytes(Charset.forName("UTF-8")));
             out.flush();
             out.close();
         } catch (Exception e) {

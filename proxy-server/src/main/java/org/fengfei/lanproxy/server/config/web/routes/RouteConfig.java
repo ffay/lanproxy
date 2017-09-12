@@ -1,5 +1,6 @@
 package org.fengfei.lanproxy.server.config.web.routes;
 
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -59,7 +60,8 @@ public class RouteConfig {
                 String auth = request.headers().get(HttpHeaders.Names.AUTHORIZATION);
                 if (!authenticated && auth != null) {
                     String[] authArr = auth.split(" ");
-                    if (authArr.length == 2 && authArr[0].equals(ProxyConfig.getInstance().getConfigAdminUsername()) && authArr[1].equals(ProxyConfig.getInstance().getConfigAdminPassword())) {
+                    if (authArr.length == 2 && authArr[0].equals(ProxyConfig.getInstance().getConfigAdminUsername())
+                            && authArr[1].equals(ProxyConfig.getInstance().getConfigAdminPassword())) {
                         authenticated = true;
                     }
                 }
@@ -89,7 +91,7 @@ public class RouteConfig {
             public ResponseInfo request(FullHttpRequest request) {
                 byte[] buf = new byte[request.content().readableBytes()];
                 request.content().readBytes(buf);
-                String config = new String(buf);
+                String config = new String(buf, Charset.forName("UTF-8"));
                 List<Client> clients = JsonUtil.json2object(config, new TypeToken<List<Client>>() {
                 });
                 if (clients == null) {
@@ -126,7 +128,8 @@ public class RouteConfig {
                     return ResponseInfo.build(ResponseInfo.CODE_INVILID_PARAMS, "Error username or password");
                 }
 
-                if (username.equals(ProxyConfig.getInstance().getConfigAdminUsername()) && password.equals(ProxyConfig.getInstance().getConfigAdminPassword())) {
+                if (username.equals(ProxyConfig.getInstance().getConfigAdminUsername())
+                        && password.equals(ProxyConfig.getInstance().getConfigAdminPassword())) {
                     token = UUID.randomUUID().toString().replace("-", "");
                     return ResponseInfo.build(token);
                 }
