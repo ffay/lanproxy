@@ -211,13 +211,15 @@ public class ProxyConfig implements Serializable {
         this.inetPortLanInfoMapping = inetPortLanInfoMapping;
         this.clients = clients;
 
-        try {
-            FileOutputStream out = new FileOutputStream(file);
-            out.write(proxyMappingConfigJson.getBytes(Charset.forName("UTF-8")));
-            out.flush();
-            out.close();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        if (proxyMappingConfigJson != null) {
+            try {
+                FileOutputStream out = new FileOutputStream(file);
+                out.write(proxyMappingConfigJson.getBytes(Charset.forName("UTF-8")));
+                out.flush();
+                out.close();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
 
         notifyconfigChangedListeners();

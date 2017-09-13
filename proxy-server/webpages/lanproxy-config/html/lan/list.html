@@ -1,18 +1,50 @@
 <div class="layui-tab layui-tab-brief">
 	<ul class="layui-tab-title site-demo-title">
-		<li class="layui-this tab-title">代理配置列表</li>
+		<li class="layui-this tab-title"></li>
 	</ul>
 	<div class="main-content"></div>
 	<div class="layui-input-block" style="float: left; margin-left: 15px;">
-		<button class="layui-btn mapping-add">添加配置</button>
+		<button class="layui-btn mapping-add"></button>
 	</div>
 </div>
+<script id="mapping-tpl" type="text/html">
+<table class="layui-table" lay-skin="line">
+    <thead>
+        <tr>
+            <th class="i18n-lan-name"></th>
+            <th class="i18n-lan-inetport"></th>
+            <th class="i18n-lan-ip"></th>
+            <th class="i18n-lan-options"></th>
+        </tr>
+    </thead>
+    <tbody>
+    <%for(var i = 0; i < data.length; i++) {%>
+        <tr>
+            <td><%:=data[i].name%></td>
+            <td><%:=data[i].inetPort%></td>
+            <td><%:=data[i].lan%></td>
+            <td>
+              <a data-index="<%:=i%>" class="layui-btn layui-btn-mini mapping-edit"></a>
+              <a data-index="<%:=i%>" class="layui-btn layui-btn-danger layui-btn-mini mapping-delete"></a>
+            </td>
+        </tr>
+    <%}%>
+    </tbody>
+</table>
+</script>
 <script>
-    $(".tab-title").html(clientList[clientIndex].name+" - 代理配置");
+    $(".tab-title").html(clientList[clientIndex].name + " - " + $.i18n.prop('lan.proxyconfig'));
+    $(".mapping-add").html($.i18n.prop('lan.addnewconfig'));
 	var html = template($("#mapping-tpl").html(), {
 		data : clientList[clientIndex].proxyMappings
 	});
 	$(".main-content").html(html);
+	$(".i18n-lan-name").html($.i18n.prop('lan.name'));
+	$(".i18n-lan-inetport").html($.i18n.prop('lan.inetport'));
+	$(".i18n-lan-ip").html($.i18n.prop('lan.ip'));
+	$(".i18n-lan-options").html($.i18n.prop('public.options'));
+	$(".mapping-edit").html($.i18n.prop('public.edit'));
+	$(".mapping-delete").html($.i18n.prop('public.delete'));
 	$(".mapping-config").click(function() {
 		window.clientIndex = $(this).attr("data-index");
 		load_page("html/lan/list.html");
@@ -23,7 +55,10 @@
 	});
 	$(".mapping-delete").click(function() {
 		var mappingIndex = $(this).attr("data-index");
-		layer.confirm('确定删除？', function(i) {
+		layer.confirm($.i18n.prop('public.confirm.delete'), {
+			title: $.i18n.prop('public.tips'),
+            btn : [ $.i18n.prop('public.ok'), $.i18n.prop('public.cancel') ]
+        }, function(i) {
 			layer.close(i);
 			clientList[clientIndex].proxyMappings.splice(mappingIndex, 1);
 			api_invoke("/config/update", clientList, function(data) {
@@ -42,29 +77,4 @@
 	$(".mapping-add").click(function() {
 		load_page("html/lan/add.html");
 	});
-</script>
-<script id="mapping-tpl" type="text/html">
-<table class="layui-table" lay-skin="line">
-    <thead>
-        <tr>
-            <th>代理名称</th>
-            <th>公网出口端口</th>
-            <th>后端IP端口</th>
-            <th>操作</th>
-        </tr>
-    </thead>
-    <tbody>
-    <%for(var i = 0; i < data.length; i++) {%>
-        <tr>
-            <td><%:=data[i].name%></td>
-            <td><%:=data[i].inetPort%></td>
-            <td><%:=data[i].lan%></td>
-            <td>
-              <a data-index="<%:=i%>" class="layui-btn layui-btn-mini mapping-edit">编辑</a>
-              <a data-index="<%:=i%>" class="layui-btn layui-btn-danger layui-btn-mini mapping-delete">删除</a>
-            </td>
-        </tr>
-    <%}%>
-    </tbody>
-</table>
 </script>

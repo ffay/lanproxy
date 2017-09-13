@@ -1,10 +1,11 @@
 <div class="layui-tab layui-tab-brief">
 	<ul class="layui-tab-title site-demo-title">
-		<li class="layui-this">客户端列表</li>
+		<li class="layui-this detail-page"></li>
 	</ul>
 	<div class="main-content"></div>
 </div>
 <script>
+    $(".layui-this.detail-page").html($.i18n.prop('client.list'));
 	window.clientList = [];
 	api_invoke("/config/detail", {}, function(data) {
 		if (data.code == 20000) {
@@ -21,7 +22,10 @@
 			});
 			$(".client-delete").click(function() {
 				window.clientIndex = $(this).attr("data-index");
-				layer.confirm('确定删除？', function(i) {
+				layer.confirm($.i18n.prop('public.confirm.delete'), {
+			        title: $.i18n.prop('public.tips'),
+		            btn : [ $.i18n.prop('public.ok'), $.i18n.prop('public.cancel') ]
+		        }, function(i) {
 					layer.close(i);
 					clientList.splice(clientIndex, 1);
 					api_invoke("/config/update", clientList, function(data) {
@@ -33,6 +37,11 @@
 					})
 				});
 			});
+			$(".th-client-name").html($.i18n.prop('client.name'));
+			$(".th-client-key").html($.i18n.prop('client.key'));
+			$(".th-options").html($.i18n.prop('public.options'));
+			$(".client-edit").html($.i18n.prop('public.edit'));
+			$(".client-delete").html($.i18n.prop('public.delete'));
 		} else {
 			alert(data.message);
 		}
@@ -42,9 +51,9 @@
 <table class="layui-table" lay-skin="line">
     <thead>
         <tr>
-            <th>客户端名称</th>
-            <th>密钥(客户端client.key配置该值)</th>
-            <th>操作</th>
+            <th class="th-client-name"></th>
+            <th class="th-client-key"></th>
+            <th class="th-options"></th>
         </tr>
     </thead>
     <tbody>
@@ -53,11 +62,8 @@
             <td><%:=data[i].name%></td>
             <td><%:=data[i].clientKey%></td>
             <td>
-              <!--
-              <a data-index="<%:=i%>" class="layui-btn layui-btn-mini mapping-config">代理配置</a>
-              -->
-              <a data-index="<%:=i%>" class="layui-btn layui-btn-mini client-edit">编辑</a>
-              <a data-index="<%:=i%>" class="layui-btn layui-btn-danger layui-btn-mini client-delete">删除</a>
+              <a data-index="<%:=i%>" class="layui-btn layui-btn-mini client-edit"></a>
+              <a data-index="<%:=i%>" class="layui-btn layui-btn-danger layui-btn-mini client-delete"></a>
             </td>
         </tr>
     <%}%>

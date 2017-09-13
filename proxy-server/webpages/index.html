@@ -51,7 +51,7 @@ body :-ms-input-placeholder {
 }
 
 .wrapper {
-	background: #393D49!important;
+	background: #393D49 !important;
 	background: -webkit-linear-gradient(top left, #50a3a2 0%, #53e3a6 100%);
 	background: linear-gradient(to bottom right, #50a3a2 0%, #53e3a6 100%);
 	opacity: 0.8;
@@ -150,21 +150,25 @@ body :-ms-input-placeholder {
 			<h1>LanProxy.org</h1>
 
 			<div class="form">
-				<input type="text" class="username" placeholder="用户名">
-				<input type="password" class="password" placeholder="密码">
-				<button type="submit" id="login-button">登录</button>
+				<input type="text" class="username" placeholder="">
+				<input type="password" class="password" placeholder="">
+				<button type="submit" id="login-button"></button>
 			</div>
 		</div>
 	</div>
 
 	<script src="jquery/jquery-3.1.1.min.js" type="text/javascript"></script>
+	<script src="jquery/jquery.i18n.properties.min.js" type="text/javascript"></script>
 	<script>
-		$('#login-button').click(function(event) { 
+		$('#login-button').click(function(event) {
 			$.ajax({
 				type : "POST",
 				url : "/login",
 				contentType : "application/json; charset=utf-8",
-				data : JSON.stringify({username: $(".username").val(), password:$(".password").val()}),
+				data : JSON.stringify({
+					username : $(".username").val(),
+					password : $(".password").val()
+				}),
 				dataType : "json",
 				success : function(data) {
 					if (data.code == 20000) {
@@ -185,10 +189,48 @@ body :-ms-input-placeholder {
 			document.cookie = name + "=" + escape(value) + ";expires="
 					+ exp.toGMTString();
 		}
-		
-		$(document).keyup(function(event){
-			if(event.keyCode ==13){
-			    $("#login-button").trigger("click");
+
+		$(document).keyup(function(event) {
+			if (event.keyCode == 13) {
+				$("#login-button").trigger("click");
+			}
+		});
+
+		/**
+		 * 设置语言类型： 默认为英文 
+		 */
+		var i18nLanguage = "en";
+
+		/* 
+		设置一下网站支持的语言种类 
+		zh-CN(中文简体)、en(英语) 
+		 */
+		var webLanguage = [ 'zh-CN', 'en' ];
+
+		function initWebLanguage() {
+			var navLanguage = navigator.language;
+			console.log("user set browser language is " + navLanguage);
+			if (navLanguage) {
+				var charSize = $.inArray(navLanguage, webLanguage);
+				if (charSize > -1) {
+					i18nLanguage = navLanguage;
+				}
+			}
+		}
+
+		initWebLanguage();
+
+		jQuery.i18n.properties({
+			name : 'lang', //资源文件名称
+			path : '/i18n/', //资源文件路径
+			mode : 'map', //用Map的方式使用资源文件中的值
+			language : i18nLanguage,
+			encoding: 'UTF-8',
+			callback : function() {//加载成功后设置显示内容
+				$('title').html($.i18n.prop('login')+" - LanProxy");
+				$('#login-button').html($.i18n.prop('login'));
+			    $(".username").attr("placeholder", $.i18n.prop('username'));
+			    $(".password").attr("placeholder", $.i18n.prop('password'));
 			}
 		});
 	</script>

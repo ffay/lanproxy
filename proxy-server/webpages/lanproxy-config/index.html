@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport"
 	content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>LanProxy-内网穿透工具</title>
+<title></title>
 <link rel="stylesheet" href="/lanproxy-config/layui/css/layui.css">
 <style type="text/css">
 .main-content {
@@ -15,10 +15,10 @@
 <body>
 	<div class="layui-layout layui-layout-admin">
 		<div class="layui-header">
-			<div class="layui-logo">LanProxy内网穿透</div>
+			<div class="layui-logo">LanProxy Configuration</div>
 			<ul class="layui-nav layui-layout-right">
 				<li class="layui-nav-item"><a href="javascript:;"
-					class="logout">退出</a></li>
+					class="logout"></a></li>
 			</ul>
 		</div>
 
@@ -28,21 +28,14 @@
 
 		<div class="layui-body"></div>
 
-		<div class="layui-footer">
-			<!-- 底部固定区域 -->
-			LanProxy内网穿透工具
-		</div>
+		<div class="layui-footer"></div>
 	</div>
 	<script src="/lanproxy-config/layui/layui.js"></script>
 	<script src="/jquery/jquery-3.1.1.min.js"></script>
+	<script src="/jquery/jquery.i18n.properties.min.js" type="text/javascript"></script>
 	<script src="/template/template.js"></script>
 	<script>
         window.clientList = [];
-        layui.use('layer', function() {
-            window.layer = layui.layer;
-            update_menu();
-            load_page("html/client/list.html");
-        });
 
         function api_invoke(uri, params, callback) {
             var index = layer.load(1, {
@@ -131,6 +124,11 @@
                     layui.use('element', function() {
                         var element = layui.element;
                     });
+                    $(".client-list").html($.i18n.prop('menu.client.list'));
+                    $(".client-list-sub").html($.i18n.prop('menu.client.list'));
+                    $(".client-add").html($.i18n.prop('menu.client.add'));
+                    $(".client-config").html($.i18n.prop('menu.client.config'));
+                    $(".statistics").html($.i18n.prop('menu.client.statistics'));
                     $(".menu-item").click(function() {
                         window.clientIndex = $(this).attr("data-index");
                         load_page("html/lan/list.html");
@@ -140,22 +138,56 @@
                 }
             });
         }
+        
+
+        var i18nLanguage = "en";
+        var webLanguage = [ 'zh-CN', 'en' ];
+
+        function initWebLanguage() {
+            var navLanguage = navigator.language;
+            if (navLanguage) {
+                var charSize = $.inArray(navLanguage, webLanguage);
+                if (charSize > -1) {
+                    i18nLanguage = navLanguage;
+                }
+            }
+        }
+
+        initWebLanguage();
+
+        jQuery.i18n.properties({
+            name : 'lang', //资源文件名称
+            path : '/i18n/', //资源文件路径
+            mode : 'map', //用Map的方式使用资源文件中的值
+            language : i18nLanguage,
+            encoding: 'UTF-8',
+            callback : function() {//加载成功后设置显示内容
+                $('title').html($.i18n.prop('title'));
+                $(".layui-footer").html($.i18n.prop('title'));
+                $(".logout").html($.i18n.prop('logout'));
+                layui.use('layer', function() {
+                    window.layer = layui.layer;
+                    update_menu();
+                    load_page("html/client/list.html");
+                });
+            }
+        });
     </script>
 	<script id="menu-tpl" type="text/html">
     <ul class="layui-nav layui-nav-tree">
-        <li class="layui-nav-item layui-nav-itemed"><a class=""
-            href="javascript:;">客户端管理</a>
+        <li class="layui-nav-item layui-nav-itemed"><a class="client-list"
+            href="javascript:;"></a>
             <dl class="layui-nav-child">
                 <dd class="layui-this">
-                    <a href="javascript:load_page('html/client/list.html');">客户端列表</a>
+                    <a href="javascript:load_page('html/client/list.html');" class="client-list-sub"></a>
                 </dd>
                 <dd>
-                    <a href="javascript:load_page('html/client/add.html');">添加客户端</a>
+                    <a href="javascript:load_page('html/client/add.html');" class="client-add"></a>
                 </dd>
             </dl>
         </li>
         <li class="layui-nav-item layui-nav-itemed">
-            <a class="" href="javascript:;">配置管理</a>
+            <a class="client-config" href="javascript:;"></a>
             <dl class="layui-nav-child">
             <%for(var i = 0; i < list.length; i++) {%>
                 <dd>
@@ -164,8 +196,8 @@
             <%}%>
             </dl>
         </li>
-        <li class="layui-nav-item layui-nav-itemed"><a class=""
-            href="javascript:load_page('html/statistics/list.html');">数据统计</a>
+        <li class="layui-nav-item layui-nav-itemed"><a class="statistics"
+            href="javascript:load_page('html/statistics/list.html');"></a>
         </li>
     </ul>
 	</script>

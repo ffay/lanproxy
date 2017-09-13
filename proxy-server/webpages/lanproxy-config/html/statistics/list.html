@@ -1,10 +1,33 @@
 <div class="layui-tab layui-tab-brief">
 	<ul class="layui-tab-title site-demo-title">
-		<li class="layui-this tab-title">数据统计</li>
+		<li class="layui-this tab-title"></li>
 	</ul>
 	<div class="main-content"></div>
 </div>
+<script id="stat-tpl" type="text/html">
+<table class="layui-table" lay-skin="line">
+    <thead>
+        <tr>
+            <th class="i18n-inetport"></th>
+            <th class="i18n-inflow"></th>
+            <th class="i18n-outflow"></th>
+            <th class="i18n-channels"></th>
+        </tr>
+    </thead>
+    <tbody>
+    <%for(var i = 0; i < data.length; i++) {%>
+        <tr>
+            <td><%:=data[i].port%></td>
+            <td><%:=bytesToSize(data[i].readBytes)%></td>
+            <td><%:=bytesToSize(data[i].wroteBytes)%></td>
+            <td><%:=data[i].channels%></td>
+        </tr>
+    <%}%>
+    </tbody>
+</table>
+</script>
 <script>
+    $(".tab-title").html($.i18n.prop('menu.client.statistics'));
 	function bytesToSize(bytes) {
 		if (bytes === 0)
 			return '0 B';
@@ -20,27 +43,9 @@
 			data : data.data
 		});
 		$(".main-content").html(html);
+		$(".i18n-inetport").html($.i18n.prop('statistics.inetport'));
+		$(".i18n-inflow").html($.i18n.prop('statistics.inflow'));
+		$(".i18n-outflow").html($.i18n.prop('statistics.outflow'));
+		$(".i18n-channels").html($.i18n.prop('statistics.channels'));
 	});
-</script>
-<script id="stat-tpl" type="text/html">
-<table class="layui-table" lay-skin="line">
-    <thead>
-        <tr>
-            <th>出口端口</th>
-            <th>流入数据</th>
-            <th>流出数据</th>
-            <th>当前连接数</th>
-        </tr>
-    </thead>
-    <tbody>
-    <%for(var i = 0; i < data.length; i++) {%>
-        <tr>
-            <td><%:=data[i].port%></td>
-            <td><%:=bytesToSize(data[i].readBytes)%></td>
-            <td><%:=bytesToSize(data[i].wroteBytes)%></td>
-            <td><%:=data[i].channels%></td>
-        </tr>
-    <%}%>
-    </tbody>
-</table>
 </script>

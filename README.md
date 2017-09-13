@@ -1,6 +1,8 @@
 lanproxy
 --------
 
+[README EN](README_en.md) | [中文文档](README.md)
+
 lanproxy是一个将局域网个人电脑、服务器代理到公网的内网穿透工具，目前仅支持tcp流量转发，可支持任何tcp上层协议（访问内网网站、本地支付接口调试、ssh访问、远程桌面...）。目前市面上提供类似服务的有花生壳、TeamView、GoToMyCloud等等，但要使用第三方的公网服务器就必须为第三方付费，并且这些服务都有各种各样的限制，此外，由于数据包会流经第三方，因此对数据安全也是一大隐患。
 
 ### 相关地址
@@ -49,9 +51,11 @@ config.admin.password=admin
 
 代理配置，打开地址 http://ip:8090 ，使用上面配置中配置的用户名密码登录，进入如下代理配置界面
 
-![webconfig](webconfig01.jpeg)
+![webconfig](readme_zh_client_list.png)
 
-![webconfig](webconfig02.jpeg)
+![webconfig](readme_zh_proxy_list.png)
+
+![webconfig](readme_zh_stat_list.png)
 
 > 一个server可以支持多个客户端连接
 > 配置数据存放在 ~/.lanproxy/config.json 文件中
