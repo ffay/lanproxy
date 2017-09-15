@@ -108,7 +108,14 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
             return;
         }
 
-        logger.info("set port => channel, {} {}", clientKey, ports);
+        Channel channel = ProxyChannelManager.getProxyChannel(clientKey);
+        if (channel != null) {
+            logger.warn("exist channel for key {}, {}", clientKey, channel);
+            ctx.channel().close();
+            return;
+        }
+
+        logger.info("set port => channel, {}, {}, {}", clientKey, ports, ctx.channel());
         ProxyChannelManager.addProxyChannel(ports, clientKey, ctx.channel());
     }
 
