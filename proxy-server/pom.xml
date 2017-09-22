@@ -29,112 +29,65 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>2.4</version>
+
                 <configuration>
-                    <excludes>
-                        <exclude>*.properties</exclude>
-                        <exclude>*.sh</exclude>
-                        <exclude>*.bat</exclude>
-                        <exclude>*.jks</exclude>
-                    </excludes>
+                    <archive>
+                        <manifest>
+                            <!-- 指定Main方法入口的class -->
+                            <mainClass>org.fengfei.lanproxy.server.ProxyServerContainer</mainClass>
+                            <!-- 在jar包的MANIFEST.MF文件中生成Class-Path属性 -->
+                            <addClasspath>true</addClasspath>
+                            <!-- Class-Path 前缀 -->
+                            <classpathPrefix>lib/</classpathPrefix>
+                        </manifest>
+                        <manifestEntries>
+                            <!-- 在Class-Path下添加配置文件的路径 -->
+                            <Class-Path>conf/</Class-Path>
+                        </manifestEntries>
+                    </archive>
+                    <includes>
+                        <!-- 打jar包时，将class文件打包进去 -->
+                        <include>**/*.class</include>
+                        <!-- 打jar包时，将mybatis的mapper文件打包进去 -->
+                    </includes>
                 </configuration>
             </plugin>
+            <!-- 拷贝依赖的jar包到lib目录 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>2.2</version>
                 <executions>
                     <execution>
-                        <id>copy-dependencies</id>
-                        <phase>package</phase>
+                        <phase>prepare-package</phase>
                         <goals>
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>../distribution/proxy-server-${project.version}/lib</outputDirectory>
-                            <overWriteReleases>false</overWriteReleases>
-                            <overWriteSnapshots>false</overWriteSnapshots>
-                            <overWriteIfNewer>true</overWriteIfNewer>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
+            <!-- 项目资源插件 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>2.6</version>
                 <executions>
                     <execution>
-                        <id>copy-config</id>
+                        <id>copy-resources</id>
                         <phase>package</phase>
                         <goals>
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
                             <encoding>UTF-8</encoding>
-                            <outputDirectory>../distribution/proxy-server-${project.version}/conf</outputDirectory>
+                            <!-- 拷贝项目src/main/resources/下所有文件到conf/目录下 -->
+                            <outputDirectory>${project.build.directory}/conf</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>src/main/resources</directory>
-                                    <includes>
-                                        <include>*.properties</include>
-                                        <include>*.json</include>
-                                        <include>*.jks</include>
-                                    </includes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>copy-webpages</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <encoding>UTF-8</encoding>
-                            <outputDirectory>../distribution/proxy-server-${project.version}/webpages</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>webpages</directory>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>copy-sh</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <encoding>UTF-8</encoding>
-                            <outputDirectory>../distribution/proxy-server-${project.version}/bin</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>src/main/resources</directory>
-                                    <includes>
-                                        <include>*.sh</include>
-                                        <include>*.bat</include>
-                                    </includes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>copy-dist-jar</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <encoding>UTF-8</encoding>
-                            <outputDirectory>../distribution/proxy-server-${project.version}/lib</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>target</directory>
-                                    <includes>
-                                        <include>*.jar</include>
-                                    </includes>
+                                    <directory>src/main/resources/</directory>
+                                    <filtering>true</filtering>
                                 </resource>
                             </resources>
                         </configuration>
