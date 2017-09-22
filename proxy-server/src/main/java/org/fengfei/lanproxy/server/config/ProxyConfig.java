@@ -6,6 +6,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,13 +41,13 @@ public class ProxyConfig implements Serializable {
     static {
 
         // 代理配置信息存放在用户根目录下
-        String dataPath = System.getProperty("user.home") + "/" + ".lanproxy/";
-        File file = new File(dataPath);
-        if (!file.isDirectory()) {
-            file.mkdir();
-        }
+//        String dataPath = "classpath:";//System.getProperty("user.home") + "/" + ".lanproxy/";
+//        File file = new File(dataPath);
+//        if (!file.isDirectory()) {
+//            file.mkdir();
+//        }
 
-        CONFIG_FILE = dataPath + "/config.json";
+        CONFIG_FILE =  "config.json";
     }
 
     /** 代理服务器绑定主机host */
@@ -158,8 +160,16 @@ public class ProxyConfig implements Serializable {
      * 解析配置文件
      */
     public void update(String proxyMappingConfigJson) {
+//        URI uri = null;
+//        try {
+//
+//            uri = ProxyConfig.class.getClassLoader().getResource(CONFIG_FILE).toURI();
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }
 
-        File file = new File(CONFIG_FILE);
+        File file = new File(Thread.currentThread().getContextClassLoader().getResource(CONFIG_FILE).getFile());
+
         try {
             if (proxyMappingConfigJson == null && file.exists()) {
                 InputStream in = new FileInputStream(file);

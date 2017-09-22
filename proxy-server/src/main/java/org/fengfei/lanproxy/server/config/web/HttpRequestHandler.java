@@ -3,6 +3,8 @@ package org.fengfei.lanproxy.server.config.web;
 import java.io.File;
 import java.io.RandomAccessFile;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.Charset;
 
 import org.fengfei.lanproxy.common.JsonUtil;
@@ -29,8 +31,7 @@ import io.netty.handler.stream.ChunkedNioFile;
 
 public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
-    private static final String PAGE_FOLDER = System.getProperty("app.home", System.getProperty("user.dir"))
-            + "/webpages";
+    private static final String PAGE_FOLDER = "classpath:/webpages";
 
     private static final String SERVER_VS = "LPS-0.1";
 
@@ -77,11 +78,15 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
         URI uri = new URI(request.getUri());
         String uriPath = uri.getPath();
         uriPath = uriPath.equals("/") ? "/index.html" : uriPath;
-        String path = PAGE_FOLDER + uriPath;
+        String pageFolder = Thread.currentThread().getContextClassLoader().getResource("webpages").getPath();
+        System.out.println("Page Folder:" + pageFolder);
+        String path = pageFolder + uriPath;
+        System.out.println("access path:" + path);
         File rfile = new File(path);
         if (rfile.isDirectory()) {
             path = path + "/index.html";
             rfile = new File(path);
+            System.out.println("file is directory?" + rfile.isDirectory());
         }
 
         if (!rfile.exists()) {
@@ -132,6 +137,22 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
     private static void send100Continue(ChannelHandlerContext ctx) {
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.CONTINUE);
         ctx.writeAndFlush(response);
+    }
+
+    public static void main(String...args) throws URISyntaxException {
+
+        URL url1 = HttpRequestHandler.class.getClassLoader().getResource("config.json");
+
+        File file = new File(url1.toURI());
+
+        String url = new HttpRequestHandler().getClass().getResource("/").getPath();
+
+        if (file.exists()){
+            System.out.println("exists");
+        }else{
+            file.mkdir();
+            System.out.println(file.getPath());
+        }
     }
 
 }
