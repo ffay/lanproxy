@@ -39,9 +39,11 @@ public class ProxyChannelManager {
 
     private static final AttributeKey<String> CHANNEL_CLIENT_KEY = AttributeKey.newInstance("channel_client_key");
 
-    private static final AttributeKey<Boolean> PROXY_CHANNEL_WRITEABLE = AttributeKey.newInstance("proxy_channel_writeable");
+    private static final AttributeKey<Boolean> PROXY_CHANNEL_WRITEABLE = AttributeKey
+            .newInstance("proxy_channel_writeable");
 
-    private static final AttributeKey<Boolean> REAL_BACKEND_SERVER_CHANNEL_WRITEABLE = AttributeKey.newInstance("real_backend_server_channel_writeable");
+    private static final AttributeKey<Boolean> REAL_BACKEND_SERVER_CHANNEL_WRITEABLE = AttributeKey
+            .newInstance("real_backend_server_channel_writeable");
 
     private static Map<Integer, Channel> portChannelMapping = new ConcurrentHashMap<Integer, Channel>();
 
@@ -68,7 +70,8 @@ public class ProxyChannelManager {
                     }
 
                     if (proxyChannel.isActive()) {
-                        List<Integer> inetPorts = new ArrayList<Integer>(ProxyConfig.getInstance().getClientInetPorts(clientKey));
+                        List<Integer> inetPorts = new ArrayList<Integer>(
+                                ProxyConfig.getInstance().getClientInetPorts(clientKey));
                         Set<Integer> inetPortSet = new HashSet<Integer>(inetPorts);
                         List<Integer> channelInetPorts = new ArrayList<Integer>(proxyChannel.attr(CHANNEL_PORT).get());
 
@@ -111,7 +114,8 @@ public class ProxyChannelManager {
                 while (ite.hasNext()) {
                     Entry<String, Channel> entry = ite.next();
                     Channel proxyChannel = entry.getValue();
-                    logger.info("proxyChannel config, {}, {}, {} ,{}", entry.getKey(), proxyChannel, getUserChannels(proxyChannel).size(), proxyChannel.attr(CHANNEL_PORT).get());
+                    logger.info("proxyChannel config, {}, {}, {} ,{}", entry.getKey(), proxyChannel,
+                            getUserChannels(proxyChannel).size(), proxyChannel.attr(CHANNEL_PORT).get());
                 }
             }
 
@@ -218,6 +222,10 @@ public class ProxyChannelManager {
         return portChannelMapping.get(port);
     }
 
+    public static Channel getProxyChannel(String clientKey) {
+        return proxyChannels.get(clientKey);
+    }
+
     /**
      * 增加用户连接与代理客户端连接关系
      *
@@ -294,8 +302,10 @@ public class ProxyChannelManager {
      * @param client
      * @param proxy
      */
-    public static void setUserChannelReadability(Channel userChannel, Boolean realBackendServerChannelWriteability, Boolean proxyChannelWriteability) {
-        logger.info("update user channel readability, {} {} {}", userChannel, realBackendServerChannelWriteability, proxyChannelWriteability);
+    public static void setUserChannelReadability(Channel userChannel, Boolean realBackendServerChannelWriteability,
+            Boolean proxyChannelWriteability) {
+        logger.debug("update user channel readability, {} {} {}", userChannel, realBackendServerChannelWriteability,
+                proxyChannelWriteability);
         synchronized (userChannel) {
             if (realBackendServerChannelWriteability != null) {
                 userChannel.attr(REAL_BACKEND_SERVER_CHANNEL_WRITEABLE).set(realBackendServerChannelWriteability);
@@ -305,7 +315,8 @@ public class ProxyChannelManager {
                 userChannel.attr(PROXY_CHANNEL_WRITEABLE).set(proxyChannelWriteability);
             }
 
-            if (userChannel.attr(REAL_BACKEND_SERVER_CHANNEL_WRITEABLE).get() && userChannel.attr(PROXY_CHANNEL_WRITEABLE).get()) {
+            if (userChannel.attr(REAL_BACKEND_SERVER_CHANNEL_WRITEABLE).get()
+                    && userChannel.attr(PROXY_CHANNEL_WRITEABLE).get()) {
 
                 // 代理客户端与后端服务器连接状态均为可写时，用户连接状态为可读
                 userChannel.config().setOption(ChannelOption.AUTO_READ, true);

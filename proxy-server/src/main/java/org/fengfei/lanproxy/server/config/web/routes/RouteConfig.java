@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.fengfei.lanproxy.common.JsonUtil;
+import org.fengfei.lanproxy.server.ProxyChannelManager;
 import org.fengfei.lanproxy.server.config.ProxyConfig;
 import org.fengfei.lanproxy.server.config.ProxyConfig.Client;
 import org.fengfei.lanproxy.server.config.web.ApiRoute;
@@ -19,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.reflect.TypeToken;
 
+import io.netty.channel.Channel;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaders;
 
@@ -79,7 +81,15 @@ public class RouteConfig {
 
             @Override
             public ResponseInfo request(FullHttpRequest request) {
-
+                List<Client> clients = ProxyConfig.getInstance().getClients();
+                for (Client client : clients) {
+                    Channel channel = ProxyChannelManager.getProxyChannel(client.getClientKey());
+                    if (channel != null) {
+                        client.setStatus(1);// online
+                    } else {
+                        client.setStatus(0);// offline
+                    }
+                }
                 return ResponseInfo.build(ProxyConfig.getInstance().getClients());
             }
         });
