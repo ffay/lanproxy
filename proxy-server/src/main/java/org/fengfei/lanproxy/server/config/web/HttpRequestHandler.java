@@ -78,14 +78,15 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
         URI uri = new URI(request.getUri());
         String uriPath = uri.getPath();
         uriPath = uriPath.equals("/") ? "/index.html" : uriPath;
-        System.out.println("Resource:" + Thread.currentThread().getContextClassLoader().getResource("webpages"));
         String pageFolder = Thread.currentThread().getContextClassLoader().getResource("webpages").getPath();
         System.out.println("Page Folder:" + pageFolder);
         String path = pageFolder + uriPath;
+        System.out.println("access path:" + path);
         File rfile = new File(path);
         if (rfile.isDirectory()) {
             path = path + "/index.html";
             rfile = new File(path);
+            System.out.println("file is directory?" + rfile.isDirectory());
         }
 
         if (!rfile.exists()) {
