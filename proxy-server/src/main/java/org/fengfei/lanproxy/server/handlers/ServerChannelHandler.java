@@ -3,6 +3,7 @@ package org.fengfei.lanproxy.server.handlers;
 import java.util.List;
 
 import org.fengfei.lanproxy.protocol.ProxyMessage;
+import org.fengfei.lanproxy.server.Constants;
 import org.fengfei.lanproxy.server.ProxyChannelManager;
 import org.fengfei.lanproxy.server.config.ProxyConfig;
 import org.slf4j.Logger;
@@ -28,26 +29,26 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
     protected void channelRead0(ChannelHandlerContext ctx, ProxyMessage proxyMessage) throws Exception {
         logger.debug("ProxyMessage received {}", proxyMessage.getType());
         switch (proxyMessage.getType()) {
-        case ProxyMessage.TYPE_HEARTBEAT:
-            handleHeartbeatMessage(ctx, proxyMessage);
-            break;
-        case ProxyMessage.TYPE_AUTH:
-            handleAuthMessage(ctx, proxyMessage);
-            break;
-        case ProxyMessage.TYPE_CONNECT:
-            handleConnectMessage(ctx, proxyMessage);
-            break;
-        case ProxyMessage.TYPE_DISCONNECT:
-            handleDisconnectMessage(ctx, proxyMessage);
-            break;
-        case ProxyMessage.TYPE_TRANSFER:
-            handleTransferMessage(ctx, proxyMessage);
-            break;
-        case ProxyMessage.TYPE_WRITE_CONTROL:
-            handleWriteControlMessage(ctx, proxyMessage);
-            break;
-        default:
-            break;
+            case ProxyMessage.TYPE_HEARTBEAT:
+                handleHeartbeatMessage(ctx, proxyMessage);
+                break;
+            case ProxyMessage.TYPE_AUTH:
+                handleAuthMessage(ctx, proxyMessage);
+                break;
+            case ProxyMessage.TYPE_CONNECT:
+                handleConnectMessage(ctx, proxyMessage);
+                break;
+            case ProxyMessage.TYPE_DISCONNECT:
+                handleDisconnectMessage(ctx, proxyMessage);
+                break;
+            case ProxyMessage.TYPE_TRANSFER:
+                handleTransferMessage(ctx, proxyMessage);
+                break;
+            case ProxyMessage.TYPE_WRITE_CONTROL:
+                handleWriteControlMessage(ctx, proxyMessage);
+                break;
+            default:
+                break;
         }
     }
 
@@ -63,8 +64,7 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
     }
 
     private void handleTransferMessage(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
-        String userId = proxyMessage.getUri();
-        Channel userChannel = ProxyChannelManager.getUserChannel(ctx.channel(), userId);
+        Channel userChannel = ctx.channel().attr(Constants.NEXT_CHANNEL).get();
         if (userChannel != null) {
             ByteBuf buf = ctx.alloc().buffer(proxyMessage.getData().length);
             buf.writeBytes(proxyMessage.getData());
@@ -73,19 +73,63 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
     }
 
     private void handleDisconnectMessage(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
-        String userId = proxyMessage.getUri();
-        Channel userChannel = ProxyChannelManager.removeUserChannel(ctx.channel(), userId);
+        String clientKey = ctx.channel().attr(Constants.CLIENT_KEY).get();
+
+        // 代理连接没有连上服务器由控制连接发送用户端断开连接消息
+        if (clientKey == null) {
+            String userId = proxyMessage.getUri();
+            Channel userChannel = ProxyChannelManager.removeUserChannelFromCmdChannel(ctx.channel(), userId);
+            if (userChannel != null) {
+                // 数据发送完成后再关闭连接，解决http1.0数据传输问题
+                userChannel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+            }
+            return;
+        }
+
+        Channel cmdChannel = ProxyChannelManager.getCmdChannel(clientKey);
+        if (cmdChannel == null) {
+            logger.warn("ConnectMessage:error cmd channel key {}", ctx.channel().attr(Constants.CLIENT_KEY).get());
+            return;
+        }
+
+        Channel userChannel = ProxyChannelManager.removeUserChannelFromCmdChannel(cmdChannel, ctx.channel().attr(Constants.USER_ID).get());
         if (userChannel != null) {
             // 数据发送完成后再关闭连接，解决http1.0数据传输问题
             userChannel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+            ctx.channel().attr(Constants.NEXT_CHANNEL).remove();
+            ctx.channel().attr(Constants.CLIENT_KEY).remove();
+            ctx.channel().attr(Constants.USER_ID).remove();
         }
     }
 
     private void handleConnectMessage(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
-        String userId = proxyMessage.getUri();
-        Channel userChannel = ProxyChannelManager.getUserChannel(ctx.channel(), userId);
-        if (userChannel != null) {
+        String uri = proxyMessage.getUri();
+        if (uri == null) {
+            ctx.channel().close();
+            logger.warn("ConnectMessage:null uri");
+            return;
+        }
 
+        String[] tokens = uri.split("@");
+        if (tokens.length != 2) {
+            ctx.channel().close();
+            logger.warn("ConnectMessage:error uri");
+            return;
+        }
+
+        Channel cmdChannel = ProxyChannelManager.getCmdChannel(tokens[1]);
+        if (cmdChannel == null) {
+            ctx.channel().close();
+            logger.warn("ConnectMessage:error cmd channel key {}", tokens[1]);
+            return;
+        }
+
+        Channel userChannel = ProxyChannelManager.getUserChannel(cmdChannel, tokens[0]);
+        if (userChannel != null) {
+            ctx.channel().attr(Constants.USER_ID).set(tokens[0]);
+            ctx.channel().attr(Constants.CLIENT_KEY).set(tokens[1]);
+            ctx.channel().attr(Constants.NEXT_CHANNEL).set(userChannel);
+            userChannel.attr(Constants.NEXT_CHANNEL).set(ctx.channel());
             // 代理客户端与后端服务器连接成功，修改用户连接为可读状态
             ProxyChannelManager.setUserChannelReadability(userChannel, true, ctx.channel().isWritable());
         }
@@ -95,7 +139,7 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
         ProxyMessage heartbeatMessage = new ProxyMessage();
         heartbeatMessage.setSerialNumber(heartbeatMessage.getSerialNumber());
         heartbeatMessage.setType(ProxyMessage.TYPE_HEARTBEAT);
-        logger.debug("response heartbeat message {}", heartbeatMessage);
+        logger.debug("response heartbeat message {}", ctx.channel());
         ctx.channel().writeAndFlush(heartbeatMessage);
     }
 
@@ -108,7 +152,7 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
             return;
         }
 
-        Channel channel = ProxyChannelManager.getProxyChannel(clientKey);
+        Channel channel = ProxyChannelManager.getCmdChannel(clientKey);
         if (channel != null) {
             logger.warn("exist channel for key {}, {}", clientKey, channel);
             ctx.channel().close();
@@ -116,18 +160,35 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
         }
 
         logger.info("set port => channel, {}, {}, {}", clientKey, ports, ctx.channel());
-        ProxyChannelManager.addProxyChannel(ports, clientKey, ctx.channel());
+        ProxyChannelManager.addCmdChannel(ports, clientKey, ctx.channel());
     }
 
     @Override
     public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
-        ProxyChannelManager.notifyProxyChannelWritabilityChanged(ctx.channel());
+        Channel userChannel = ctx.channel().attr(Constants.NEXT_CHANNEL).get();
+        if (userChannel != null) {
+            ProxyChannelManager.setUserChannelReadability(userChannel, null, ctx.channel().isWritable());
+        }
+
         super.channelWritabilityChanged(ctx);
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        ProxyChannelManager.removeProxyChannel(ctx.channel());
+        Channel userChannel = ctx.channel().attr(Constants.NEXT_CHANNEL).get();
+        if (userChannel != null && userChannel.isActive()) {
+            String clientKey = ctx.channel().attr(Constants.CLIENT_KEY).get();
+            String userId = ctx.channel().attr(Constants.USER_ID).get();
+            Channel cmdChannel = ProxyChannelManager.getCmdChannel(clientKey);
+            ProxyChannelManager.removeUserChannelFromCmdChannel(cmdChannel, userId);
+
+            // 数据发送完成后再关闭连接，解决http1.0数据传输问题
+            userChannel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+            userChannel.close();
+        } else {
+            ProxyChannelManager.removeCmdChannel(ctx.channel());
+        }
+
         super.channelInactive(ctx);
     }
 

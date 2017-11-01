@@ -4,12 +4,17 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.fengfei.lanproxy.client.listener.ProxyChannelBorrowListener;
+import org.fengfei.lanproxy.common.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelOption;
 import io.netty.util.AttributeKey;
@@ -24,32 +29,68 @@ public class ClientChannelMannager {
 
     private static Logger logger = LoggerFactory.getLogger(ClientChannelMannager.class);
 
-    private static final AttributeKey<String> USER_ID = AttributeKey.newInstance("user_id");
+    private static final AttributeKey<Boolean> USER_CHANNEL_WRITEABLE = AttributeKey.newInstance("user_channel_writeable");
 
-    private static final AttributeKey<Boolean> USER_CHANNEL_WRITEABLE = AttributeKey
-            .newInstance("user_channel_writeable");
+    private static final AttributeKey<Boolean> CLIENT_CHANNEL_WRITEABLE = AttributeKey.newInstance("client_channel_writeable");
 
-    private static final AttributeKey<Boolean> CLIENT_CHANNEL_WRITEABLE = AttributeKey
-            .newInstance("client_channel_writeable");
+    private static final int MAX_POOL_SIZE = 100;
 
     private static Map<String, Channel> realServerChannels = new ConcurrentHashMap<String, Channel>();
 
-    private static volatile Channel channel;
+    private static ConcurrentLinkedQueue<Channel> proxyChannelPool = new ConcurrentLinkedQueue<Channel>();
 
-    public static void setChannel(Channel channel) {
-        ClientChannelMannager.channel = channel;
+    private static volatile Channel cmdChannel;
+
+    private static Config config = Config.getInstance();
+
+    public static void borrowProxyChanel(Bootstrap bootstrap, final ProxyChannelBorrowListener borrowListener) {
+        Channel channel = proxyChannelPool.poll();
+        if (channel != null) {
+            borrowListener.success(channel);
+            return;
+        }
+
+        bootstrap.connect(config.getStringValue("server.host"), config.getIntValue("server.port")).addListener(new ChannelFutureListener() {
+
+            @Override
+            public void operationComplete(ChannelFuture future) throws Exception {
+                if (future.isSuccess()) {
+                    borrowListener.success(future.channel());
+                } else {
+                    logger.warn("connect proxy server failed", future.cause());
+                    borrowListener.error(future.cause());
+                }
+            }
+        });
     }
 
-    public static Channel getChannel() {
-        return channel;
+    public static void returnProxyChanel(Channel proxyChanel) {
+        if (proxyChannelPool.size() > MAX_POOL_SIZE) {
+            proxyChanel.close();
+        } else {
+            proxyChannelPool.offer(proxyChanel);
+            logger.debug("return ProxyChanel to the pool, channel is {}, pool size is {} ", proxyChanel, proxyChannelPool.size());
+        }
+    }
+
+    public static void removeProxyChanel(Channel proxyChanel) {
+        proxyChannelPool.remove(proxyChanel);
+    }
+
+    public static void setCmdChannel(Channel cmdChannel) {
+        ClientChannelMannager.cmdChannel = cmdChannel;
+    }
+
+    public static Channel getCmdChannel() {
+        return cmdChannel;
     }
 
     public static void setRealServerChannelUserId(Channel realServerChannel, String userId) {
-        realServerChannel.attr(USER_ID).set(userId);
+        realServerChannel.attr(Constants.USER_ID).set(userId);
     }
 
     public static String getRealServerChannelUserId(Channel realServerChannel) {
-        return realServerChannel.attr(USER_ID).get();
+        return realServerChannel.attr(Constants.USER_ID).get();
     }
 
     public static Channel getRealServerChannel(String userId) {
@@ -65,8 +106,7 @@ public class ClientChannelMannager {
     }
 
     public static boolean isRealServerReadable(Channel realServerChannel) {
-        return realServerChannel.attr(CLIENT_CHANNEL_WRITEABLE).get()
-                && realServerChannel.attr(USER_CHANNEL_WRITEABLE).get();
+        return realServerChannel.attr(CLIENT_CHANNEL_WRITEABLE).get() && realServerChannel.attr(USER_CHANNEL_WRITEABLE).get();
     }
 
     public static void setRealServerChannelReadability(Channel realServerChannel, Boolean client, Boolean user) {
@@ -83,21 +123,22 @@ public class ClientChannelMannager {
             realServerChannel.attr(USER_CHANNEL_WRITEABLE).set(user);
         }
 
-        if (realServerChannel.attr(CLIENT_CHANNEL_WRITEABLE).get()
-                && realServerChannel.attr(USER_CHANNEL_WRITEABLE).get()) {
+        if (realServerChannel.attr(CLIENT_CHANNEL_WRITEABLE).get() && realServerChannel.attr(USER_CHANNEL_WRITEABLE).get()) {
             realServerChannel.config().setOption(ChannelOption.AUTO_READ, true);
         } else {
             realServerChannel.config().setOption(ChannelOption.AUTO_READ, false);
         }
     }
 
-    public static void notifyChannelWritabilityChanged(Channel channel) {
-        logger.debug("channel writability changed, {}", channel.isWritable());
-        Iterator<Entry<String, Channel>> entryIte = realServerChannels.entrySet().iterator();
-        while (entryIte.hasNext()) {
-            setRealServerChannelReadability(entryIte.next().getValue(), channel.isWritable(), null);
-        }
-    }
+    // public static void notifyChannelWritabilityChanged(Channel channel) {
+    // logger.debug("channel writability changed, {}", channel.isWritable());
+    // Iterator<Entry<String, Channel>> entryIte =
+    // realServerChannels.entrySet().iterator();
+    // while (entryIte.hasNext()) {
+    // setRealServerChannelReadability(entryIte.next().getValue(),
+    // channel.isWritable(), null);
+    // }
+    // }
 
     public static void clearRealServerChannels() {
         logger.warn("channel closed, clear real server channels");

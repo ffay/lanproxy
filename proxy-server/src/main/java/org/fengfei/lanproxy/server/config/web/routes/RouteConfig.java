@@ -62,8 +62,7 @@ public class RouteConfig {
                 String auth = request.headers().get(HttpHeaders.Names.AUTHORIZATION);
                 if (!authenticated && auth != null) {
                     String[] authArr = auth.split(" ");
-                    if (authArr.length == 2 && authArr[0].equals(ProxyConfig.getInstance().getConfigAdminUsername())
-                            && authArr[1].equals(ProxyConfig.getInstance().getConfigAdminPassword())) {
+                    if (authArr.length == 2 && authArr[0].equals(ProxyConfig.getInstance().getConfigAdminUsername()) && authArr[1].equals(ProxyConfig.getInstance().getConfigAdminPassword())) {
                         authenticated = true;
                     }
                 }
@@ -83,7 +82,7 @@ public class RouteConfig {
             public ResponseInfo request(FullHttpRequest request) {
                 List<Client> clients = ProxyConfig.getInstance().getClients();
                 for (Client client : clients) {
-                    Channel channel = ProxyChannelManager.getProxyChannel(client.getClientKey());
+                    Channel channel = ProxyChannelManager.getCmdChannel(client.getClientKey());
                     if (channel != null) {
                         client.setStatus(1);// online
                     } else {
@@ -138,8 +137,7 @@ public class RouteConfig {
                     return ResponseInfo.build(ResponseInfo.CODE_INVILID_PARAMS, "Error username or password");
                 }
 
-                if (username.equals(ProxyConfig.getInstance().getConfigAdminUsername())
-                        && password.equals(ProxyConfig.getInstance().getConfigAdminPassword())) {
+                if (username.equals(ProxyConfig.getInstance().getConfigAdminUsername()) && password.equals(ProxyConfig.getInstance().getConfigAdminPassword())) {
                     token = UUID.randomUUID().toString().replace("-", "");
                     return ResponseInfo.build(token);
                 }
