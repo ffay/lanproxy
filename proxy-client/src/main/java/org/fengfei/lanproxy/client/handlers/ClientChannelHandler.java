@@ -106,6 +106,7 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
                     logger.debug("connect realserver success, {}", realServerChannel);
 
                     ClientChannelMannager.setRealServerChannelReadability(realServerChannel, false, true);
+
                     // 获取连接
                     ClientChannelMannager.borrowProxyChanel(proxyBootstrap, new ProxyChannelBorrowListener() {
 
@@ -124,7 +125,6 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
                             ClientChannelMannager.setRealServerChannelReadability(realServerChannel, true, true);
                             ClientChannelMannager.addRealServerChannel(userId, realServerChannel);
                             ClientChannelMannager.setRealServerChannelUserId(realServerChannel, userId);
-
                         }
 
                         @Override
