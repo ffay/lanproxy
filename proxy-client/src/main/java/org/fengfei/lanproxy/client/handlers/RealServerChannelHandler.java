@@ -30,7 +30,7 @@ public class RealServerChannelHandler extends SimpleChannelInboundHandler<ByteBu
             buf.readBytes(bytes);
             String userId = ClientChannelMannager.getRealServerChannelUserId(realServerChannel);
             ProxyMessage proxyMessage = new ProxyMessage();
-            proxyMessage.setType(ProxyMessage.TYPE_TRANSFER);
+            proxyMessage.setType(ProxyMessage.P_TYPE_TRANSFER);
             proxyMessage.setUri(userId);
             proxyMessage.setData(bytes);
             channel.writeAndFlush(proxyMessage);
@@ -67,7 +67,7 @@ public class RealServerChannelHandler extends SimpleChannelInboundHandler<ByteBu
         Channel channel = ClientChannelMannager.getCmdChannel();
         if (channel != null) {
             ProxyMessage proxyMessage = new ProxyMessage();
-            proxyMessage.setType(ProxyMessage.TYPE_WRITE_CONTROL);
+            proxyMessage.setType(ProxyMessage.C_TYPE_WRITE_CONTROL);
             proxyMessage.setUri(userId);
             proxyMessage.setData(realServerChannel.isWritable() ? new byte[] { 0x01 } : new byte[] { 0x00 });
             channel.writeAndFlush(proxyMessage);

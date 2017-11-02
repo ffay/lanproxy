@@ -42,7 +42,7 @@ public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
             buf.readBytes(bytes);
             String userId = ProxyChannelManager.getUserChannelUserId(userChannel);
             ProxyMessage proxyMessage = new ProxyMessage();
-            proxyMessage.setType(ProxyMessage.TYPE_TRANSFER);
+            proxyMessage.setType(ProxyMessage.P_TYPE_TRANSFER);
             proxyMessage.setUri(userId);
             proxyMessage.setData(bytes);
             proxyChannel.writeAndFlush(proxyMessage);
@@ -124,7 +124,7 @@ public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
             // 通知代理客户端，用户连接可写状态
             String userId = ProxyChannelManager.getUserChannelUserId(userChannel);
             ProxyMessage proxyMessage = new ProxyMessage();
-            proxyMessage.setType(ProxyMessage.TYPE_WRITE_CONTROL);
+            proxyMessage.setType(ProxyMessage.C_TYPE_WRITE_CONTROL);
             proxyMessage.setUri(userId);
             proxyMessage.setData(userChannel.isWritable() ? new byte[] { 0x01 } : new byte[] { 0x00 });
             cmdChannel.writeAndFlush(proxyMessage);

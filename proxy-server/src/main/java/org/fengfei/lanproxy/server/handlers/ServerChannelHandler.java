@@ -32,7 +32,7 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
             case ProxyMessage.TYPE_HEARTBEAT:
                 handleHeartbeatMessage(ctx, proxyMessage);
                 break;
-            case ProxyMessage.TYPE_AUTH:
+            case ProxyMessage.C_TYPE_AUTH:
                 handleAuthMessage(ctx, proxyMessage);
                 break;
             case ProxyMessage.TYPE_CONNECT:
@@ -41,10 +41,10 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
             case ProxyMessage.TYPE_DISCONNECT:
                 handleDisconnectMessage(ctx, proxyMessage);
                 break;
-            case ProxyMessage.TYPE_TRANSFER:
+            case ProxyMessage.P_TYPE_TRANSFER:
                 handleTransferMessage(ctx, proxyMessage);
                 break;
-            case ProxyMessage.TYPE_WRITE_CONTROL:
+            case ProxyMessage.C_TYPE_WRITE_CONTROL:
                 handleWriteControlMessage(ctx, proxyMessage);
                 break;
             default:
