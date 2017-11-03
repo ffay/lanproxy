@@ -112,7 +112,7 @@ public class ProxyClientContainer implements Container, ChannelStatusListener {
                     // 连接成功，向服务器发送客户端认证信息（clientKey）
                     ClientChannelMannager.setCmdChannel(future.channel());
                     ProxyMessage proxyMessage = new ProxyMessage();
-                    proxyMessage.setType(ProxyMessage.TYPE_AUTH);
+                    proxyMessage.setType(ProxyMessage.C_TYPE_AUTH);
                     proxyMessage.setUri(config.getStringValue("client.key"));
                     future.channel().writeAndFlush(proxyMessage);
                     sleepTimeMill = 1000;
