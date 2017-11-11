@@ -1,10 +1,10 @@
 package org.fengfei.lanproxy.client.handlers;
 
 import org.fengfei.lanproxy.client.ClientChannelMannager;
-import org.fengfei.lanproxy.client.Constants;
 import org.fengfei.lanproxy.client.listener.ChannelStatusListener;
 import org.fengfei.lanproxy.client.listener.ProxyChannelBorrowListener;
 import org.fengfei.lanproxy.common.Config;
+import org.fengfei.lanproxy.protocol.Constants;
 import org.fengfei.lanproxy.protocol.ProxyMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

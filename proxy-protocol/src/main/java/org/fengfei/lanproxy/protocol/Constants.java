@@ -1,4 +1,4 @@
-package org.fengfei.lanproxy.client;
+package org.fengfei.lanproxy.protocol;
 
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;

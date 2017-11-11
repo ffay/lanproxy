@@ -17,9 +17,9 @@ public class IdleCheckHandler extends IdleStateHandler {
 
     public static final int USER_CHANNEL_READ_IDLE_TIME = 1200;
 
-    public static final int READ_IDLE_TIME = 20;
+    public static final int READ_IDLE_TIME = 40;
 
-    public static final int WRITE_IDLE_TIME = 10;
+    public static final int WRITE_IDLE_TIME = 20;
 
     private static Logger logger = LoggerFactory.getLogger(IdleCheckHandler.class);
 
@@ -29,6 +29,10 @@ public class IdleCheckHandler extends IdleStateHandler {
 
     @Override
     protected void channelIdle(ChannelHandlerContext ctx, IdleStateEvent evt) throws Exception {
+
+        if (ctx.channel().attr(Constants.NEXT_CHANNEL) != null) {
+            return;
+        }
 
         if (IdleStateEvent.FIRST_WRITER_IDLE_STATE_EVENT == evt) {
             logger.debug("channel write timeout {}", ctx.channel());

@@ -3,8 +3,8 @@ package org.fengfei.lanproxy.server.handlers;
 import java.net.InetSocketAddress;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.fengfei.lanproxy.protocol.Constants;
 import org.fengfei.lanproxy.protocol.ProxyMessage;
-import org.fengfei.lanproxy.server.Constants;
 import org.fengfei.lanproxy.server.ProxyChannelManager;
 import org.fengfei.lanproxy.server.config.ProxyConfig;
 
@@ -98,6 +98,7 @@ public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
                 proxyChannel.attr(Constants.CLIENT_KEY).remove();
                 proxyChannel.attr(Constants.USER_ID).remove();
 
+                proxyChannel.config().setOption(ChannelOption.AUTO_READ, true);
                 // 通知客户端，用户连接已经断开
                 ProxyMessage proxyMessage = new ProxyMessage();
                 proxyMessage.setType(ProxyMessage.TYPE_DISCONNECT);

@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.fengfei.lanproxy.client.listener.ProxyChannelBorrowListener;
 import org.fengfei.lanproxy.common.Config;
+import org.fengfei.lanproxy.protocol.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +17,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelOption;
 import io.netty.util.AttributeKey;
 
 /**
@@ -67,6 +69,8 @@ public class ClientChannelMannager {
         if (proxyChannelPool.size() > MAX_POOL_SIZE) {
             proxyChanel.close();
         } else {
+            proxyChanel.config().setOption(ChannelOption.AUTO_READ, true);
+            proxyChanel.attr(Constants.NEXT_CHANNEL).remove();
             proxyChannelPool.offer(proxyChanel);
             logger.debug("return ProxyChanel to the pool, channel is {}, pool size is {} ", proxyChanel, proxyChannelPool.size());
         }
