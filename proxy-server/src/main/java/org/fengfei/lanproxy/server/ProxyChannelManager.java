@@ -16,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelOption;
 import io.netty.util.AttributeKey;
 
 /**
@@ -36,10 +35,6 @@ public class ProxyChannelManager {
     private static final AttributeKey<List<Integer>> CHANNEL_PORT = AttributeKey.newInstance("channel_port");
 
     private static final AttributeKey<String> CHANNEL_CLIENT_KEY = AttributeKey.newInstance("channel_client_key");
-
-    private static final AttributeKey<Boolean> PROXY_CHANNEL_WRITEABLE = AttributeKey.newInstance("proxy_channel_writeable");
-
-    private static final AttributeKey<Boolean> REAL_BACKEND_SERVER_CHANNEL_WRITEABLE = AttributeKey.newInstance("real_backend_server_channel_writeable");
 
     private static Map<Integer, Channel> portCmdChannelMapping = new ConcurrentHashMap<Integer, Channel>();
 
@@ -291,34 +286,6 @@ public class ProxyChannelManager {
      */
     public static Map<String, Channel> getUserChannels(Channel cmdChannel) {
         return cmdChannel.attr(USER_CHANNELS).get();
-    }
-
-    /**
-     * 更新用户连接是否可写状态
-     *
-     * @param userChannel
-     * @param client
-     * @param proxy
-     */
-    public static void setUserChannelReadability(Channel userChannel, Boolean realBackendServerChannelWriteability, Boolean proxyChannelWriteability) {
-        logger.debug("update user channel readability, {} {} {}", userChannel, realBackendServerChannelWriteability, proxyChannelWriteability);
-        synchronized (userChannel) {
-            if (realBackendServerChannelWriteability != null) {
-                userChannel.attr(REAL_BACKEND_SERVER_CHANNEL_WRITEABLE).set(realBackendServerChannelWriteability);
-            }
-
-            if (proxyChannelWriteability != null) {
-                userChannel.attr(PROXY_CHANNEL_WRITEABLE).set(proxyChannelWriteability);
-            }
-
-            if (userChannel.attr(REAL_BACKEND_SERVER_CHANNEL_WRITEABLE).get() && userChannel.attr(PROXY_CHANNEL_WRITEABLE).get()) {
-
-                // 代理客户端与后端服务器连接状态均为可写时，用户连接状态为可读
-                userChannel.config().setOption(ChannelOption.AUTO_READ, true);
-            } else {
-                userChannel.config().setOption(ChannelOption.AUTO_READ, false);
-            }
-        }
     }
 
 }

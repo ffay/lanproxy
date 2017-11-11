@@ -14,6 +14,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.SimpleChannelInboundHandler;
 
 /**
@@ -44,22 +45,8 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
             case ProxyMessage.P_TYPE_TRANSFER:
                 handleTransferMessage(ctx, proxyMessage);
                 break;
-            case ProxyMessage.C_TYPE_WRITE_CONTROL:
-                handleWriteControlMessage(ctx, proxyMessage);
-                break;
             default:
                 break;
-        }
-    }
-
-    private void handleWriteControlMessage(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
-        String userId = proxyMessage.getUri();
-        Channel userChannel = ProxyChannelManager.getUserChannel(ctx.channel(), userId);
-        if (userChannel != null) {
-
-            // 同步代理客户端与后端服务器的连接可写状态
-            boolean writeable = proxyMessage.getData()[0] == 0x01 ? true : false;
-            ProxyChannelManager.setUserChannelReadability(userChannel, writeable, null);
         }
     }
 
@@ -131,7 +118,7 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
             ctx.channel().attr(Constants.NEXT_CHANNEL).set(userChannel);
             userChannel.attr(Constants.NEXT_CHANNEL).set(ctx.channel());
             // 代理客户端与后端服务器连接成功，修改用户连接为可读状态
-            ProxyChannelManager.setUserChannelReadability(userChannel, true, ctx.channel().isWritable());
+            userChannel.config().setOption(ChannelOption.AUTO_READ, true);
         }
     }
 
@@ -167,7 +154,7 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
     public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
         Channel userChannel = ctx.channel().attr(Constants.NEXT_CHANNEL).get();
         if (userChannel != null) {
-            ProxyChannelManager.setUserChannelReadability(userChannel, null, ctx.channel().isWritable());
+            userChannel.config().setOption(ChannelOption.AUTO_READ, ctx.channel().isWritable());
         }
 
         super.channelWritabilityChanged(ctx);

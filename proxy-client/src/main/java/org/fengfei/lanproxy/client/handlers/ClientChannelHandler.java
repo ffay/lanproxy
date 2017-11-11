@@ -16,6 +16,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.SimpleChannelInboundHandler;
 
 /**
@@ -52,20 +53,8 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
             case ProxyMessage.P_TYPE_TRANSFER:
                 handleTransferMessage(ctx, proxyMessage);
                 break;
-            case ProxyMessage.C_TYPE_WRITE_CONTROL:
-                handleWriteControlMessage(ctx, proxyMessage);
-                break;
             default:
                 break;
-        }
-    }
-
-    private void handleWriteControlMessage(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
-        String userId = proxyMessage.getUri();
-        Channel realServerChannel = ClientChannelMannager.getRealServerChannel(userId);
-        if (realServerChannel != null) {
-            boolean writeable = proxyMessage.getData()[0] == 0x01 ? true : false;
-            ClientChannelMannager.setRealServerChannelReadability(realServerChannel, null, writeable);
         }
     }
 
@@ -105,7 +94,7 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
                     final Channel realServerChannel = future.channel();
                     logger.debug("connect realserver success, {}", realServerChannel);
 
-                    ClientChannelMannager.setRealServerChannelReadability(realServerChannel, false, true);
+                    realServerChannel.config().setOption(ChannelOption.AUTO_READ, false);
 
                     // 获取连接
                     ClientChannelMannager.borrowProxyChanel(proxyBootstrap, new ProxyChannelBorrowListener() {
@@ -122,7 +111,7 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
                             proxyMessage.setUri(userId + "@" + Config.getInstance().getStringValue("client.key"));
                             channel.writeAndFlush(proxyMessage);
 
-                            ClientChannelMannager.setRealServerChannelReadability(realServerChannel, true, true);
+                            realServerChannel.config().setOption(ChannelOption.AUTO_READ, true);
                             ClientChannelMannager.addRealServerChannel(userId, realServerChannel);
                             ClientChannelMannager.setRealServerChannelUserId(realServerChannel, userId);
                         }
@@ -150,7 +139,7 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
     public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
         Channel realServerChannel = ctx.channel().attr(Constants.NEXT_CHANNEL).get();
         if (realServerChannel != null) {
-            ClientChannelMannager.setRealServerChannelReadability(realServerChannel, ctx.channel().isWritable(), null);
+            realServerChannel.config().setOption(ChannelOption.AUTO_READ, ctx.channel().isWritable());
         }
 
         super.channelWritabilityChanged(ctx);

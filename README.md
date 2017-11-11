@@ -8,6 +8,7 @@ lanproxy是一个将局域网个人电脑、服务器代理到公网的内网穿
 ### 相关地址
 
 - 主页 https://lanproxy.thingsglobal.org
+- lanproxy-go-client https://github.com/ffay/lanproxy-go-client
 - 发布包下载地址 https://github.com/ffay/lanproxy/releases
 
 ### 实现方案
@@ -84,9 +85,9 @@ server.port=4993
 #### 运行
 
 -	一台内网pc或服务器（运行proxy-client）；一台公网服务器（运行proxy-server）
--	安装java1.8运行环境
--	linux（mac）环境中运行bin目录下的 startup.sh
--	windows环境中运行bin目录下的 startup.bat
+ -安装java1.8运行环境
+ -linux（mac）环境中运行bin目录下的 startup.sh
+ -windows环境中运行bin目录下的 startup.bat
 
 #### 其他
 

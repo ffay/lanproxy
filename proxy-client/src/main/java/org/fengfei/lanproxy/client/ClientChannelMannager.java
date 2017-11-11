@@ -16,7 +16,6 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelOption;
 import io.netty.util.AttributeKey;
 
 /**
@@ -108,37 +107,6 @@ public class ClientChannelMannager {
     public static boolean isRealServerReadable(Channel realServerChannel) {
         return realServerChannel.attr(CLIENT_CHANNEL_WRITEABLE).get() && realServerChannel.attr(USER_CHANNEL_WRITEABLE).get();
     }
-
-    public static void setRealServerChannelReadability(Channel realServerChannel, Boolean client, Boolean user) {
-        logger.debug("update real server channel readability, {} {} {}", realServerChannel, client, user);
-        if (realServerChannel == null) {
-            return;
-        }
-
-        if (client != null) {
-            realServerChannel.attr(CLIENT_CHANNEL_WRITEABLE).set(client);
-        }
-
-        if (user != null) {
-            realServerChannel.attr(USER_CHANNEL_WRITEABLE).set(user);
-        }
-
-        if (realServerChannel.attr(CLIENT_CHANNEL_WRITEABLE).get() && realServerChannel.attr(USER_CHANNEL_WRITEABLE).get()) {
-            realServerChannel.config().setOption(ChannelOption.AUTO_READ, true);
-        } else {
-            realServerChannel.config().setOption(ChannelOption.AUTO_READ, false);
-        }
-    }
-
-    // public static void notifyChannelWritabilityChanged(Channel channel) {
-    // logger.debug("channel writability changed, {}", channel.isWritable());
-    // Iterator<Entry<String, Channel>> entryIte =
-    // realServerChannels.entrySet().iterator();
-    // while (entryIte.hasNext()) {
-    // setRealServerChannelReadability(entryIte.next().getValue(),
-    // channel.isWritable(), null);
-    // }
-    // }
 
     public static void clearRealServerChannels() {
         logger.warn("channel closed, clear real server channels");

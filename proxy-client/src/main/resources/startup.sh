@@ -7,7 +7,7 @@ LOGS_DIR=$DEPLOY_DIR/logs
 
 APP_MAINCLASS=org.fengfei.lanproxy.client.ProxyClientContainer
 
-PIDS=`ps -ef | grep java | grep "$CONF_DIR" |awk '{print $2}'`
+PIDS=`ps -ef | grep -v grep | grep "$CONF_DIR" |awk '{print $2}'`
 if [ -n "$PIDS" ]; then
     echo "ERROR: already started!"
     echo "PID: $PIDS"
