@@ -70,11 +70,6 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
                 // 数据发送完成后再关闭连接，解决http1.0数据传输问题
                 userChannel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
             }
-            // 通知客户端，用户连接已经断开
-            proxyMessage = new ProxyMessage();
-            proxyMessage.setType(ProxyMessage.TYPE_DISCONNECT);
-            proxyMessage.setUri(proxyMessage.getUri());
-            ctx.channel().writeAndFlush(proxyMessage);
             return;
         }
 
