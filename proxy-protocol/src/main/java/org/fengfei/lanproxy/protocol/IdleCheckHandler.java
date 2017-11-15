@@ -17,9 +17,9 @@ public class IdleCheckHandler extends IdleStateHandler {
 
     public static final int USER_CHANNEL_READ_IDLE_TIME = 1200;
 
-    public static final int READ_IDLE_TIME = 40;
+    public static final int READ_IDLE_TIME = 60;
 
-    public static final int WRITE_IDLE_TIME = 20;
+    public static final int WRITE_IDLE_TIME = 40;
 
     private static Logger logger = LoggerFactory.getLogger(IdleCheckHandler.class);
 
@@ -30,6 +30,7 @@ public class IdleCheckHandler extends IdleStateHandler {
     @Override
     protected void channelIdle(ChannelHandlerContext ctx, IdleStateEvent evt) throws Exception {
 
+        // 正在使用中的连接不处理
         if (ctx.channel().attr(Constants.NEXT_CHANNEL) != null) {
             return;
         }
