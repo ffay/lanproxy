@@ -64,19 +64,16 @@ public class ProxyServerContainer implements Container, ConfigChangedListener {
     @Override
     public void start() {
         ServerBootstrap bootstrap = new ServerBootstrap();
-        bootstrap.group(serverBossGroup, serverWorkerGroup).channel(NioServerSocketChannel.class)
-                .childHandler(new ChannelInitializer<SocketChannel>() {
+        bootstrap.group(serverBossGroup, serverWorkerGroup).channel(NioServerSocketChannel.class).childHandler(new ChannelInitializer<SocketChannel>() {
 
-                    @Override
-                    public void initChannel(SocketChannel ch) throws Exception {
-                        ch.pipeline().addLast(new ProxyMessageDecoder(MAX_FRAME_LENGTH, LENGTH_FIELD_OFFSET,
-                                LENGTH_FIELD_LENGTH, LENGTH_ADJUSTMENT, INITIAL_BYTES_TO_STRIP));
-                        ch.pipeline().addLast(new ProxyMessageEncoder());
-                        ch.pipeline().addLast(new IdleCheckHandler(IdleCheckHandler.READ_IDLE_TIME,
-                                IdleCheckHandler.WRITE_IDLE_TIME, 0));
-                        ch.pipeline().addLast(new ServerChannelHandler());
-                    }
-                });
+            @Override
+            public void initChannel(SocketChannel ch) throws Exception {
+                ch.pipeline().addLast(new ProxyMessageDecoder(MAX_FRAME_LENGTH, LENGTH_FIELD_OFFSET, LENGTH_FIELD_LENGTH, LENGTH_ADJUSTMENT, INITIAL_BYTES_TO_STRIP));
+                ch.pipeline().addLast(new ProxyMessageEncoder());
+                ch.pipeline().addLast(new IdleCheckHandler(IdleCheckHandler.READ_IDLE_TIME, IdleCheckHandler.WRITE_IDLE_TIME, 0));
+                ch.pipeline().addLast(new ServerChannelHandler());
+            }
+        });
 
         try {
             bootstrap.bind(ProxyConfig.getInstance().getServerBind(), ProxyConfig.getInstance().getServerPort()).get();
@@ -97,27 +94,23 @@ public class ProxyServerContainer implements Container, ConfigChangedListener {
 
     private void initializeSSLTCPTransport(String host, int port, final SSLContext sslContext) {
         ServerBootstrap b = new ServerBootstrap();
-        b.group(serverBossGroup, serverWorkerGroup).channel(NioServerSocketChannel.class)
-                .childHandler(new ChannelInitializer<SocketChannel>() {
+        b.group(serverBossGroup, serverWorkerGroup).channel(NioServerSocketChannel.class).childHandler(new ChannelInitializer<SocketChannel>() {
 
-                    @Override
-                    public void initChannel(SocketChannel ch) throws Exception {
-                        ChannelPipeline pipeline = ch.pipeline();
-                        try {
-                            pipeline.addLast("ssl", createSslHandler(sslContext,
-                                    Config.getInstance().getBooleanValue("server.ssl.needsClientAuth", false)));
-                            ch.pipeline().addLast(new ProxyMessageDecoder(MAX_FRAME_LENGTH, LENGTH_FIELD_OFFSET,
-                                    LENGTH_FIELD_LENGTH, LENGTH_ADJUSTMENT, INITIAL_BYTES_TO_STRIP));
-                            ch.pipeline().addLast(new ProxyMessageEncoder());
-                            ch.pipeline().addLast(new IdleCheckHandler(IdleCheckHandler.READ_IDLE_TIME,
-                                    IdleCheckHandler.WRITE_IDLE_TIME, 0));
-                            ch.pipeline().addLast(new ServerChannelHandler());
-                        } catch (Throwable th) {
-                            logger.error("Severe error during pipeline creation", th);
-                            throw th;
-                        }
-                    }
-                });
+            @Override
+            public void initChannel(SocketChannel ch) throws Exception {
+                ChannelPipeline pipeline = ch.pipeline();
+                try {
+                    pipeline.addLast("ssl", createSslHandler(sslContext, Config.getInstance().getBooleanValue("server.ssl.needsClientAuth", false)));
+                    ch.pipeline().addLast(new ProxyMessageDecoder(MAX_FRAME_LENGTH, LENGTH_FIELD_OFFSET, LENGTH_FIELD_LENGTH, LENGTH_ADJUSTMENT, INITIAL_BYTES_TO_STRIP));
+                    ch.pipeline().addLast(new ProxyMessageEncoder());
+                    ch.pipeline().addLast(new IdleCheckHandler(IdleCheckHandler.READ_IDLE_TIME, IdleCheckHandler.WRITE_IDLE_TIME, 0));
+                    ch.pipeline().addLast(new ServerChannelHandler());
+                } catch (Throwable th) {
+                    logger.error("Severe error during pipeline creation", th);
+                    throw th;
+                }
+            }
+        });
         try {
 
             // Bind and start to accept incoming connections.
@@ -131,16 +124,14 @@ public class ProxyServerContainer implements Container, ConfigChangedListener {
 
     private void startUserPort() {
         ServerBootstrap bootstrap = new ServerBootstrap();
-        bootstrap.group(serverBossGroup, serverWorkerGroup).channel(NioServerSocketChannel.class)
-                .childHandler(new ChannelInitializer<SocketChannel>() {
+        bootstrap.group(serverBossGroup, serverWorkerGroup).channel(NioServerSocketChannel.class).childHandler(new ChannelInitializer<SocketChannel>() {
 
-                    @Override
-                    public void initChannel(SocketChannel ch) throws Exception {
-                        ch.pipeline().addLast(new IdleCheckHandler(IdleCheckHandler.USER_CHANNEL_READ_IDLE_TIME, 0, 0));
-                        ch.pipeline().addFirst(new BytesMetricsHandler());
-                        ch.pipeline().addLast(new UserChannelHandler());
-                    }
-                });
+            @Override
+            public void initChannel(SocketChannel ch) throws Exception {
+                ch.pipeline().addFirst(new BytesMetricsHandler());
+                ch.pipeline().addLast(new UserChannelHandler());
+            }
+        });
 
         List<Integer> ports = ProxyConfig.getInstance().getUserPorts();
         for (int port : ports) {

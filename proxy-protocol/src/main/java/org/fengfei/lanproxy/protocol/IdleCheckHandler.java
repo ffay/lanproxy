@@ -30,11 +30,6 @@ public class IdleCheckHandler extends IdleStateHandler {
     @Override
     protected void channelIdle(ChannelHandlerContext ctx, IdleStateEvent evt) throws Exception {
 
-        // 正在使用中的连接不处理
-        if (ctx.channel().attr(Constants.NEXT_CHANNEL) != null) {
-            return;
-        }
-
         if (IdleStateEvent.FIRST_WRITER_IDLE_STATE_EVENT == evt) {
             logger.debug("channel write timeout {}", ctx.channel());
             ProxyMessage proxyMessage = new ProxyMessage();
