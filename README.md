@@ -61,13 +61,13 @@ config.admin.password=admin
 > 一个server可以支持多个客户端连接
 > 配置数据存放在 ~/.lanproxy/config.json 文件中
 
-##### client配置
+##### Java 客户端配置
 
 client的配置文件放置在conf目录中，配置 config.properties
 
 ```properties
 
-#与在proxy-server配置后台创建客户端时填写的秘钥保持一致；没有服务器可以登录 https://lanproxy.org/ 创建客户端获取秘钥
+#与在proxy-server配置后台创建客户端时填写的秘钥保持一致；
 client.key=
 ssl.enable=true
 ssl.jksPath=test.jks
@@ -79,15 +79,59 @@ server.host=lp.thingsglobal.org
 #proxy-server ssl默认端口4993，默认普通端口4900
 #ssl.enable=true时这里填写ssl端口，ssl.enable=false时这里填写普通端口
 server.port=4993
-
 ```
 
-#### 运行
+- 安装java1.7或以上环境
+- linux（mac）环境中运行bin目录下的 startup.sh
+- windows环境中运行bin目录下的 startup.bat
 
--	一台内网pc或服务器（运行proxy-client）；一台公网服务器（运行proxy-server）
- -安装java1.8运行环境
- -linux（mac）环境中运行bin目录下的 startup.sh
- -windows环境中运行bin目录下的 startup.bat
+##### 其他平台客户端
+
+> 不用java客户端的可以使用下面提供的各个平台的客户端，省去安装java运行环境
+
+###### 源码地址
+
+https://github.com/ffay/lanproxy-go-client
+
+###### 发布包
+
+[mac 32位 lanproxy-client-darwin-386-20171123.tar.gz](https://github.com/ffay/lanproxy-go-client/files/1499389/lanproxy-client-darwin-386-20171123.tar.gz)
+[mac 64位 lanproxy-client-darwin-amd64-20171123.tar.gz](https://github.com/ffay/lanproxy-go-client/files/1499390/lanproxy-client-darwin-amd64-20171123.tar.gz)
+[freebsd 32位 lanproxy-client-freebsd-386-20171123.tar.gz](https://github.com/ffay/lanproxy-go-client/files/1499391/lanproxy-client-freebsd-386-20171123.tar.gz)
+[freebsd 64位 lanproxy-client-freebsd-amd64-20171123.tar.gz](https://github.com/ffay/lanproxy-go-client/files/1499392/lanproxy-client-freebsd-amd64-20171123.tar.gz)
+[linux 32位 lanproxy-client-linux-386-20171123.tar.gz](https://github.com/ffay/lanproxy-go-client/files/1499393/lanproxy-client-linux-386-20171123.tar.gz)
+[linux 64位 lanproxy-client-linux-amd64-20171123.tar.gz](https://github.com/ffay/lanproxy-go-client/files/1499394/lanproxy-client-linux-amd64-20171123.tar.gz)
+[lanproxy-client-linux-arm-20171123.tar.gz](https://github.com/ffay/lanproxy-go-client/files/1499395/lanproxy-client-linux-arm-20171123.tar.gz)
+[lanproxy-client-linux-mips-20171123.tar.gz](https://github.com/ffay/lanproxy-go-client/files/1499396/lanproxy-client-linux-mips-20171123.tar.gz)
+[lanproxy-client-linux-mipsle-20171123.tar.gz](https://github.com/ffay/lanproxy-go-client/files/1499397/lanproxy-client-linux-mipsle-20171123.tar.gz)
+[windows 32位 lanproxy-client-windows-386-20171123.tar.gz](https://github.com/ffay/lanproxy-go-client/files/1499398/lanproxy-client-windows-386-20171123.tar.gz)
+[windows 64位 lanproxy-client-windows-amd64-20171123.tar.gz](https://github.com/ffay/lanproxy-go-client/files/1499399/lanproxy-client-windows-amd64-20171123.tar.gz)
+
+###### 普通端口连接
+
+```shell
+# mac 64位
+nohup ./client_darwin_amd64 -s SERVER_IP -p SERVER_PORT -k CLIENT_KEY &
+
+# linux 64位
+nohup ./client_linux_amd64 -s SERVER_IP -p SERVER_PORT -k CLIENT_KEY &
+
+# windows 64 位
+./client_windows_amd64.exe -s SERVER_IP -p SERVER_PORT -k CLIENT_KEY
+```
+
+###### SSL端口连接
+
+```shell
+# mac 64位
+nohup ./client_darwin_amd64 -s SERVER_IP -p SERVER_SSL_PORT -k CLIENT_KEY -ssl true &
+
+# linux 64位
+nohup ./client_linux_amd64 -s SERVER_IP -p SERVER_SSL_PORT -k CLIENT_KEY -ssl true &
+
+# windows 64 位
+./client_windows_amd64.exe -s SERVER_IP -p SERVER_SSL_PORT -k CLIENT_KEY -ssl true
+```
 
 #### 其他
 
