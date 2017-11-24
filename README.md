@@ -104,6 +104,7 @@ https://github.com/ffay/lanproxy-go-client
 - [lanproxy-client-linux-mipsle-20171123.tar.gz](https://github.com/ffay/lanproxy-go-client/files/1499397/lanproxy-client-linux-mipsle-20171123.tar.gz)
 - [windows 32位 lanproxy-client-windows-386-20171123.tar.gz](https://github.com/ffay/lanproxy-go-client/files/1499398/lanproxy-client-windows-386-20171123.tar.gz)
 - [windows 64位 lanproxy-client-windows-amd64-20171123.tar.gz](https://github.com/ffay/lanproxy-go-client/files/1499399/lanproxy-client-windows-amd64-20171123.tar.gz)
+- github下载比较慢可以使用后面这个下载地址 http://cloud.thingsglobal.org/s/Ek3Xx5IW3RtQGMn
 
 ###### 普通端口连接
 
