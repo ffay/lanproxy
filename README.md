@@ -93,18 +93,7 @@ https://github.com/ffay/lanproxy-go-client
 
 ###### 发布包
 
-- [mac 32位 lanproxy-client-darwin-386-20171123.tar.gz](https://github.com/ffay/lanproxy-go-client/files/1499389/lanproxy-client-darwin-386-20171123.tar.gz)
-- [mac 64位 lanproxy-client-darwin-amd64-20171123.tar.gz](https://github.com/ffay/lanproxy-go-client/files/1499390/lanproxy-client-darwin-amd64-20171123.tar.gz)
-- [freebsd 32位 lanproxy-client-freebsd-386-20171123.tar.gz](https://github.com/ffay/lanproxy-go-client/files/1499391/lanproxy-client-freebsd-386-20171123.tar.gz)
-- [freebsd 64位 lanproxy-client-freebsd-amd64-20171123.tar.gz](https://github.com/ffay/lanproxy-go-client/files/1499392/lanproxy-client-freebsd-amd64-20171123.tar.gz)
-- [linux 32位 lanproxy-client-linux-386-20171123.tar.gz](https://github.com/ffay/lanproxy-go-client/files/1499393/lanproxy-client-linux-386-20171123.tar.gz)
-- [linux 64位 lanproxy-client-linux-amd64-20171123.tar.gz](https://github.com/ffay/lanproxy-go-client/files/1499394/lanproxy-client-linux-amd64-20171123.tar.gz)
-- [lanproxy-client-linux-arm-20171123.tar.gz](https://github.com/ffay/lanproxy-go-client/files/1499395/lanproxy-client-linux-arm-20171123.tar.gz)
-- [lanproxy-client-linux-mips-20171123.tar.gz](https://github.com/ffay/lanproxy-go-client/files/1499396/lanproxy-client-linux-mips-20171123.tar.gz)
-- [lanproxy-client-linux-mipsle-20171123.tar.gz](https://github.com/ffay/lanproxy-go-client/files/1499397/lanproxy-client-linux-mipsle-20171123.tar.gz)
-- [windows 32位 lanproxy-client-windows-386-20171123.tar.gz](https://github.com/ffay/lanproxy-go-client/files/1499398/lanproxy-client-windows-386-20171123.tar.gz)
-- [windows 64位 lanproxy-client-windows-amd64-20171123.tar.gz](https://github.com/ffay/lanproxy-go-client/files/1499399/lanproxy-client-windows-amd64-20171123.tar.gz)
-- github下载比较慢可以使用后面这个下载地址 http://cloud.thingsglobal.org/s/Ek3Xx5IW3RtQGMn
+https://github.com/ffay/lanproxy-go-client/releases
 
 ###### 普通端口连接
 
