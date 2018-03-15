@@ -7,7 +7,7 @@ lanproxy是一个将局域网个人电脑、服务器代理到公网的内网穿
 
 ### 相关地址
 
-- 主页 https://lanproxy.thingsglobal.org
+- 主页 https://lanproxy.io2c.com
 - lanproxy-go-client https://github.com/ffay/lanproxy-go-client
 - 发布包下载地址 https://github.com/ffay/lanproxy/releases
 
