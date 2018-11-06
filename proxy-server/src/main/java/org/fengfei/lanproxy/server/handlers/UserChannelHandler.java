@@ -66,8 +66,7 @@ public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
         if (cmdChannel == null) {
 
             // 该端口还没有代理客户端
-            FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.SERVICE_UNAVAILABLE);
-            ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+            // ctx.channel().close();
         } else {
             String userId = newUserId();
             String lanInfo = ProxyConfig.getInstance().getLanInfo(sa.getPort());
