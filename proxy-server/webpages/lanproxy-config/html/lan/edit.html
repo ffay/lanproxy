@@ -64,10 +64,6 @@ $(".update").click(function(){
     	layer.alert($.i18n.prop('lan.notice.inputlan'), {title:"Tips"});
         return;
     }
-    if(!check_lan(lan)){
-    	layer.alert($.i18n.prop('lan.notice.errorlan'), {title:"Tips"});
-        return;
-    }
 
     clientList[clientIndex].proxyMappings[mappingIndex]= {
     	name:name,
