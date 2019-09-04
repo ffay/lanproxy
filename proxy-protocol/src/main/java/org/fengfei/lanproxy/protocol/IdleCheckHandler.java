@@ -17,9 +17,9 @@ public class IdleCheckHandler extends IdleStateHandler {
 
     public static final int USER_CHANNEL_READ_IDLE_TIME = 1200;
 
-    public static final int READ_IDLE_TIME = 20;
+    public static final int READ_IDLE_TIME = 60;
 
-    public static final int WRITE_IDLE_TIME = 10;
+    public static final int WRITE_IDLE_TIME = 40;
 
     private static Logger logger = LoggerFactory.getLogger(IdleCheckHandler.class);
 

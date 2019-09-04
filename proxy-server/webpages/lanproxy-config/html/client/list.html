@@ -1,10 +1,11 @@
 <div class="layui-tab layui-tab-brief">
 	<ul class="layui-tab-title site-demo-title">
-		<li class="layui-this">客户端列表</li>
+		<li class="layui-this detail-page"></li>
 	</ul>
 	<div class="main-content"></div>
 </div>
 <script>
+    $(".layui-this.detail-page").html($.i18n.prop('client.list'));
 	window.clientList = [];
 	api_invoke("/config/detail", {}, function(data) {
 		if (data.code == 20000) {
@@ -21,7 +22,10 @@
 			});
 			$(".client-delete").click(function() {
 				window.clientIndex = $(this).attr("data-index");
-				layer.confirm('确定删除？', function(i) {
+				layer.confirm($.i18n.prop('public.confirm.delete'), {
+			        title: $.i18n.prop('public.tips'),
+		            btn : [ $.i18n.prop('public.ok'), $.i18n.prop('public.cancel') ]
+		        }, function(i) {
 					layer.close(i);
 					clientList.splice(clientIndex, 1);
 					api_invoke("/config/update", clientList, function(data) {
@@ -42,9 +46,10 @@
 <table class="layui-table" lay-skin="line">
     <thead>
         <tr>
-            <th>客户端名称</th>
-            <th>密钥(客户端client.key配置该值)</th>
-            <th>操作</th>
+            <th class="th-client-name"><%:=$.i18n.prop('client.name')%></th>
+            <th class="th-client-key"><%:=$.i18n.prop('client.key')%></th>
+            <th class="th-status"><%:=$.i18n.prop('client.status')%></th>
+            <th class="th-options"><%:=$.i18n.prop('public.options')%></th>
         </tr>
     </thead>
     <tbody>
@@ -53,11 +58,15 @@
             <td><%:=data[i].name%></td>
             <td><%:=data[i].clientKey%></td>
             <td>
-              <!--
-              <a data-index="<%:=i%>" class="layui-btn layui-btn-mini mapping-config">代理配置</a>
-              -->
-              <a data-index="<%:=i%>" class="layui-btn layui-btn-mini client-edit">编辑</a>
-              <a data-index="<%:=i%>" class="layui-btn layui-btn-danger layui-btn-mini client-delete">删除</a>
+                <% if(data[i].status == 1){ %>
+                <span class="layui-badge layui-bg-green"><%:=$.i18n.prop('client.status.online')%></span>
+                <% } else { %>
+                <span class="layui-badge layui-bg-gray"><%:=$.i18n.prop('client.status.offline')%></span>
+                <% }%>
+            </td>
+            <td>
+              <a data-index="<%:=i%>" class="layui-btn layui-btn-mini client-edit"><%:=$.i18n.prop('public.edit')%></a>
+              <a data-index="<%:=i%>" class="layui-btn layui-btn-danger layui-btn-mini client-delete"><%:=$.i18n.prop('public.delete')%></a>
             </td>
         </tr>
     <%}%>

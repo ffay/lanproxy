@@ -9,7 +9,7 @@ if [ ! -d $LOGS_DIR ]; then
 fi
 STDOUT_FILE=$LOGS_DIR/stdout.log
 
-PID=`ps -ef | grep java | grep "$DEPLOY_DIR/conf" | awk '{print $2}'` 
+PID=`ps -ef | grep -v grep | grep "$DEPLOY_DIR/conf" | awk '{print $2}'` 
 echo "PID: $PID"
 if [ -z "$PID" ]; then
     echo "ERROR: The proxy server does not started!"

@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.fengfei.lanproxy.common.JsonUtil;
+import org.fengfei.lanproxy.server.ProxyChannelManager;
 import org.fengfei.lanproxy.server.config.ProxyConfig;
 import org.fengfei.lanproxy.server.config.ProxyConfig.Client;
 import org.fengfei.lanproxy.server.config.web.ApiRoute;
@@ -19,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.reflect.TypeToken;
 
+import io.netty.channel.Channel;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaders;
 
@@ -60,8 +62,7 @@ public class RouteConfig {
                 String auth = request.headers().get(HttpHeaders.Names.AUTHORIZATION);
                 if (!authenticated && auth != null) {
                     String[] authArr = auth.split(" ");
-                    if (authArr.length == 2 && authArr[0].equals(ProxyConfig.getInstance().getConfigAdminUsername())
-                            && authArr[1].equals(ProxyConfig.getInstance().getConfigAdminPassword())) {
+                    if (authArr.length == 2 && authArr[0].equals(ProxyConfig.getInstance().getConfigAdminUsername()) && authArr[1].equals(ProxyConfig.getInstance().getConfigAdminPassword())) {
                         authenticated = true;
                     }
                 }
@@ -79,7 +80,15 @@ public class RouteConfig {
 
             @Override
             public ResponseInfo request(FullHttpRequest request) {
-
+                List<Client> clients = ProxyConfig.getInstance().getClients();
+                for (Client client : clients) {
+                    Channel channel = ProxyChannelManager.getCmdChannel(client.getClientKey());
+                    if (channel != null) {
+                        client.setStatus(1);// online
+                    } else {
+                        client.setStatus(0);// offline
+                    }
+                }
                 return ResponseInfo.build(ProxyConfig.getInstance().getClients());
             }
         });
@@ -128,8 +137,7 @@ public class RouteConfig {
                     return ResponseInfo.build(ResponseInfo.CODE_INVILID_PARAMS, "Error username or password");
                 }
 
-                if (username.equals(ProxyConfig.getInstance().getConfigAdminUsername())
-                        && password.equals(ProxyConfig.getInstance().getConfigAdminPassword())) {
+                if (username.equals(ProxyConfig.getInstance().getConfigAdminUsername()) && password.equals(ProxyConfig.getInstance().getConfigAdminPassword())) {
                     token = UUID.randomUUID().toString().replace("-", "");
                     return ResponseInfo.build(token);
                 }

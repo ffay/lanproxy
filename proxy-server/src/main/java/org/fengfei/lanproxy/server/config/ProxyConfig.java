@@ -211,13 +211,15 @@ public class ProxyConfig implements Serializable {
         this.inetPortLanInfoMapping = inetPortLanInfoMapping;
         this.clients = clients;
 
-        try {
-            FileOutputStream out = new FileOutputStream(file);
-            out.write(proxyMappingConfigJson.getBytes(Charset.forName("UTF-8")));
-            out.flush();
-            out.close();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        if (proxyMappingConfigJson != null) {
+            try {
+                FileOutputStream out = new FileOutputStream(file);
+                out.write(proxyMappingConfigJson.getBytes(Charset.forName("UTF-8")));
+                out.flush();
+                out.close();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
 
         notifyconfigChangedListeners();
@@ -318,6 +320,8 @@ public class ProxyConfig implements Serializable {
         /** 代理客户端与其后面的真实服务器映射关系 */
         private List<ClientProxyMapping> proxyMappings;
 
+        private int status;
+
         public String getClientKey() {
             return clientKey;
         }
@@ -340,6 +344,14 @@ public class ProxyConfig implements Serializable {
 
         public void setName(String name) {
             this.name = name;
+        }
+
+        public int getStatus() {
+            return status;
+        }
+
+        public void setStatus(int status) {
+            this.status = status;
         }
 
     }

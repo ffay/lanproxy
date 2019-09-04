@@ -1,30 +1,38 @@
 <div class="layui-tab layui-tab-brief">
     <ul class="layui-tab-title site-demo-title">
-        <li class="layui-this">编辑客户端</li>
+        <li class="layui-this edit-client-title"></li>
     </ul>
     <div class="main-content">
       <div class="layui-form-item">
-	    <label class="layui-form-label">备注名称</label>
+	    <label class="layui-form-label i18n-client-name"></label>
 	    <div class="layui-input-inline">
-	      <input type="text" name="name" autocomplete="off" placeholder="请输入客户端备注名称" class="layui-input">
+	      <input type="text" name="name" autocomplete="off" placeholder="" class="layui-input">
 	    </div>
 	  </div>
 	  <div class="layui-form-item">
-        <label class="layui-form-label">通信密钥</label>
+        <label class="layui-form-label i18n-client-key"></label>
         <div class="layui-input-inline">
-          <input type="text" name="clientKey" autocomplete="off" placeholder="请输入客户端通信密钥" class="layui-input">
+          <input type="text" name="clientKey" autocomplete="off" placeholder="" class="layui-input">
         </div>
-        <div class="layui-form-mid"><a class="layui-btn layui-btn-mini random-key random">生成随机密钥</a></div>
+        <div class="layui-form-mid"><a class="layui-btn layui-btn-mini random-key random"></a></div>
       </div>
        <div class="layui-form-item">
 	    <div class="layui-input-block">
-	      <button class="layui-btn update">提交更新</button>
-	      <button class="layui-btn layui-btn-primary back">返回</button>
+	      <button class="layui-btn update"></button>
+	      <button class="layui-btn layui-btn-primary back"></button>
 	    </div>
 	  </div>
     </div>
 </div>
 <script>
+$(".edit-client-title").html($.i18n.prop('client.edit'));
+$(".i18n-client-name").html($.i18n.prop('client.name'));
+$(".i18n-client-key").html($.i18n.prop('client.key'));
+$("input[name='name']").attr("placeholder", $.i18n.prop('client.name.placeholder'));
+$("input[name='clientKey']").attr("placeholder", $.i18n.prop('client.key.placeholder'));
+$(".random").html($.i18n.prop('client.randomkey'));
+$(".update").html($.i18n.prop('public.submit'));
+$(".back").html($.i18n.prop('public.back'));
 $("input[name='name']").val(clientList[clientIndex].name);
 $("input[name='clientKey']").val(clientList[clientIndex].clientKey);
 
@@ -37,7 +45,7 @@ $(".update").click(function(){
 	clientList[clientIndex]['clientKey'] = $("input[name='clientKey']").val();
     api_invoke("/config/update", clientList, function(data) {
         if (data.code == 20000) {
-            layer.alert('更新成功', function(index){
+            layer.alert($.i18n.prop('public.notice.updatesuccess'), {title: $.i18n.prop('public.tips')}, function(index){
                 layer.close(index);
                 location.reload();
             }); 

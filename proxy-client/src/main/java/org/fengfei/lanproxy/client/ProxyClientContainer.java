@@ -84,8 +84,8 @@ public class ProxyClientContainer implements Container, ChannelStatusListener {
                 }
                 ch.pipeline().addLast(new ProxyMessageDecoder(MAX_FRAME_LENGTH, LENGTH_FIELD_OFFSET, LENGTH_FIELD_LENGTH, LENGTH_ADJUSTMENT, INITIAL_BYTES_TO_STRIP));
                 ch.pipeline().addLast(new ProxyMessageEncoder());
-                ch.pipeline().addLast(new IdleCheckHandler(IdleCheckHandler.READ_IDLE_TIME, IdleCheckHandler.WRITE_IDLE_TIME, 0));
-                ch.pipeline().addLast(new ClientChannelHandler(realServerBootstrap, ProxyClientContainer.this));
+                ch.pipeline().addLast(new IdleCheckHandler(IdleCheckHandler.READ_IDLE_TIME, IdleCheckHandler.WRITE_IDLE_TIME - 10, 0));
+                ch.pipeline().addLast(new ClientChannelHandler(realServerBootstrap, bootstrap, ProxyClientContainer.this));
             }
         });
     }
@@ -110,9 +110,9 @@ public class ProxyClientContainer implements Container, ChannelStatusListener {
                 if (future.isSuccess()) {
 
                     // 连接成功，向服务器发送客户端认证信息（clientKey）
-                    ClientChannelMannager.setChannel(future.channel());
+                    ClientChannelMannager.setCmdChannel(future.channel());
                     ProxyMessage proxyMessage = new ProxyMessage();
-                    proxyMessage.setType(ProxyMessage.TYPE_AUTH);
+                    proxyMessage.setType(ProxyMessage.C_TYPE_AUTH);
                     proxyMessage.setUri(config.getStringValue("client.key"));
                     future.channel().writeAndFlush(proxyMessage);
                     sleepTimeMill = 1000;

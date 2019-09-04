@@ -1,58 +1,62 @@
 <div class="layui-tab layui-tab-brief">
     <ul class="layui-tab-title site-demo-title">
-        <li class="layui-this">添加代理</li>
+        <li class="layui-this i18n-new-proxy"></li>
     </ul>
     <div class="main-content">
       <div class="layui-form-item">
-	    <label class="layui-form-label">代理名称</label>
+	    <label class="layui-form-label i18n-lan-name"></label>
 	    <div class="layui-input-block">
-	      <input type="text" name="name" autocomplete="off" placeholder="请输入代理备注名称" class="layui-input">
+	      <input type="text" name="name" autocomplete="off" placeholder="" class="layui-input">
 	    </div>
 	  </div>
 	  <div class="layui-form-item">
-        <label class="layui-form-label">公网端口</label>
+        <label class="layui-form-label i18n-lan-inetport"></label>
         <div class="layui-input-block">
-          <input type="text" name="inetPort" autocomplete="off" placeholder="请输入公网出口端口，请确保端口没有被其他程序占用" class="layui-input">
+          <input type="text" name="inetPort" autocomplete="off" placeholder="" class="layui-input">
         </div>
       </div>
       <div class="layui-form-item">
-        <label class="layui-form-label">代理IP端口</label>
+        <label class="layui-form-label i18n-lan-ip"></label>
         <div class="layui-input-block">
-          <input type="text" name="lan" autocomplete="off" placeholder="请输入后端代理信息，格式：127.0.0.1:80" class="layui-input">
+          <input type="text" name="lan" autocomplete="off" placeholder="" class="layui-input">
         </div>
       </div>
        <div class="layui-form-item">
 	    <div class="layui-input-block">
-	      <button class="layui-btn add">提交添加</button>
-	      <button class="layui-btn layui-btn-primary back">返回</button>
+	      <button class="layui-btn add"></button>
+	      <button class="layui-btn layui-btn-primary back"></button>
 	    </div>
 	  </div>
     </div>
 </div>
 <script>
+$(".i18n-new-proxy").html($.i18n.prop('lan.addnewconfig'));
+$(".i18n-lan-name").html($.i18n.prop('lan.name'));
+$(".i18n-lan-inetport").html($.i18n.prop('lan.inetport'));
+$(".i18n-lan-ip").html($.i18n.prop('lan.ip'));
+$("input[name='inetPort']").attr("placeholder", $.i18n.prop('lan.inetport.placeholder'));
+$("input[name='lan']").attr("placeholder", $.i18n.prop('lan.ip.placeholder'));
+$(".add").html($.i18n.prop('public.submit'));
+$(".back").html($.i18n.prop('public.back'));
 $(".add").click(function(){
     var name = $("input[name='name']").val();
     if(name == ""){
-    	layer.alert("请输入代理备注名称");
+    	layer.alert($.i18n.prop('lan.notice.inputname'), {title:"Tips"});
     	return;
     }
     var inetPort = $("input[name='inetPort']").val();
     if(inetPort == ""){
-        layer.alert("请输入公网出口端口");
+        layer.alert($.i18n.prop('lan.notice.inputinetport'), {title:"Tips"});
         return;
     }
     if(!check_port(inetPort)){
-    	layer.alert("端口格式错误");
+    	layer.alert($.i18n.prop('lan.notice.errorport'), {title:"Tips"});
     	return;
     }
-    
+
     var lan = $("input[name='lan']").val();
     if(lan == ""){
-        layer.alert("请输入后端代理信息");
-        return;
-    }
-    if(!check_lan(lan)){
-        layer.alert("后端代理信息格式错误");
+        layer.alert($.i18n.prop('lan.notice.inputlan'), {title:"Tips"});
         return;
     }
 
@@ -64,7 +68,7 @@ $(".add").click(function(){
 
     api_invoke("/config/update", clientList, function(data) {
         if (data.code == 20000) {
-            layer.alert('添加成功', function(index){
+            layer.alert($.i18n.prop('public.notice.addsuccess'), {title:"Tips"}, function(index){
                 layer.close(index);
                 load_page("html/lan/list.html");
             }); 

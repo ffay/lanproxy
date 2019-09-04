@@ -10,13 +10,13 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.fengfei.lanproxy.protocol.Constants;
 import org.fengfei.lanproxy.server.config.ProxyConfig;
 import org.fengfei.lanproxy.server.config.ProxyConfig.ConfigChangedListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelOption;
 import io.netty.util.AttributeKey;
 
 /**
@@ -31,21 +31,15 @@ public class ProxyChannelManager {
 
     private static final AttributeKey<Map<String, Channel>> USER_CHANNELS = AttributeKey.newInstance("user_channels");
 
-    private static final AttributeKey<String> USER_ID = AttributeKey.newInstance("user_id");
-
     private static final AttributeKey<String> REQUEST_LAN_INFO = AttributeKey.newInstance("request_lan_info");
 
     private static final AttributeKey<List<Integer>> CHANNEL_PORT = AttributeKey.newInstance("channel_port");
 
     private static final AttributeKey<String> CHANNEL_CLIENT_KEY = AttributeKey.newInstance("channel_client_key");
 
-    private static final AttributeKey<Boolean> PROXY_CHANNEL_WRITEABLE = AttributeKey.newInstance("proxy_channel_writeable");
+    private static Map<Integer, Channel> portCmdChannelMapping = new ConcurrentHashMap<Integer, Channel>();
 
-    private static final AttributeKey<Boolean> REAL_BACKEND_SERVER_CHANNEL_WRITEABLE = AttributeKey.newInstance("real_backend_server_channel_writeable");
-
-    private static Map<Integer, Channel> portChannelMapping = new ConcurrentHashMap<Integer, Channel>();
-
-    private static Map<String, Channel> proxyChannels = new ConcurrentHashMap<String, Channel>();
+    private static Map<String, Channel> cmdChannels = new ConcurrentHashMap<String, Channel>();
 
     static {
         ProxyConfig.getInstance().addConfigChangedListener(new ConfigChangedListener() {
@@ -55,7 +49,7 @@ public class ProxyChannelManager {
              */
             @Override
             public synchronized void onChanged() {
-                Iterator<Entry<String, Channel>> ite = proxyChannels.entrySet().iterator();
+                Iterator<Entry<String, Channel>> ite = cmdChannels.entrySet().iterator();
                 while (ite.hasNext()) {
                     Channel proxyChannel = ite.next().getValue();
                     String clientKey = proxyChannel.attr(CHANNEL_CLIENT_KEY).get();
@@ -63,7 +57,7 @@ public class ProxyChannelManager {
                     // 去除已经去掉的clientKey配置
                     Set<String> clientKeySet = ProxyConfig.getInstance().getClientKeySet();
                     if (!clientKeySet.contains(clientKey)) {
-                        removeProxyChannel(proxyChannel);
+                        removeCmdChannel(proxyChannel);
                         continue;
                     }
 
@@ -72,11 +66,11 @@ public class ProxyChannelManager {
                         Set<Integer> inetPortSet = new HashSet<Integer>(inetPorts);
                         List<Integer> channelInetPorts = new ArrayList<Integer>(proxyChannel.attr(CHANNEL_PORT).get());
 
-                        synchronized (portChannelMapping) {
+                        synchronized (portCmdChannelMapping) {
 
                             // 移除旧的连接映射关系
                             for (int chanelInetPort : channelInetPorts) {
-                                Channel channel = portChannelMapping.get(chanelInetPort);
+                                Channel channel = portCmdChannelMapping.get(chanelInetPort);
                                 if (channel == null) {
                                     continue;
                                 }
@@ -86,7 +80,7 @@ public class ProxyChannelManager {
                                     if (!inetPortSet.contains(chanelInetPort)) {
 
                                         // 移除新配置中不包含的端口
-                                        portChannelMapping.remove(chanelInetPort);
+                                        portCmdChannelMapping.remove(chanelInetPort);
                                         proxyChannel.attr(CHANNEL_PORT).get().remove(new Integer(chanelInetPort));
                                     } else {
 
@@ -98,7 +92,7 @@ public class ProxyChannelManager {
 
                             // 将新配置中增加的外网端口写入到映射配置中
                             for (int inetPort : inetPorts) {
-                                portChannelMapping.put(inetPort, proxyChannel);
+                                portCmdChannelMapping.put(inetPort, proxyChannel);
                                 proxyChannel.attr(CHANNEL_PORT).get().add(inetPort);
                             }
 
@@ -107,7 +101,7 @@ public class ProxyChannelManager {
                     }
                 }
 
-                ite = proxyChannels.entrySet().iterator();
+                ite = cmdChannels.entrySet().iterator();
                 while (ite.hasNext()) {
                     Entry<String, Channel> entry = ite.next();
                     Channel proxyChannel = entry.getValue();
@@ -143,12 +137,12 @@ public class ProxyChannelManager {
     }
 
     /**
-     * 增加代理服务器端口与代理客户端连接的映射关系
+     * 增加代理服务器端口与代理控制客户端连接的映射关系
      *
      * @param ports
      * @param channel
      */
-    public static void addProxyChannel(List<Integer> ports, String clientKey, Channel channel) {
+    public static void addCmdChannel(List<Integer> ports, String clientKey, Channel channel) {
 
         if (ports == null) {
             throw new IllegalArgumentException("port can not be null");
@@ -156,16 +150,16 @@ public class ProxyChannelManager {
 
         // 客户端（proxy-client）相对较少，这里同步的比较重
         // 保证服务器对外端口与客户端到服务器的连接关系在临界情况时调用removeChannel(Channel channel)时不出问题
-        synchronized (portChannelMapping) {
+        synchronized (portCmdChannelMapping) {
             for (int port : ports) {
-                portChannelMapping.put(port, channel);
+                portCmdChannelMapping.put(port, channel);
             }
         }
 
         channel.attr(CHANNEL_PORT).set(ports);
         channel.attr(CHANNEL_CLIENT_KEY).set(clientKey);
         channel.attr(USER_CHANNELS).set(new ConcurrentHashMap<String, Channel>());
-        proxyChannels.put(clientKey, channel);
+        cmdChannels.put(clientKey, channel);
     }
 
     /**
@@ -173,28 +167,28 @@ public class ProxyChannelManager {
      *
      * @param channel
      */
-    public static void removeProxyChannel(Channel channel) {
+    public static void removeCmdChannel(Channel channel) {
         logger.warn("channel closed, clear user channels, {}", channel);
         if (channel.attr(CHANNEL_PORT).get() == null) {
             return;
         }
 
         String clientKey = channel.attr(CHANNEL_CLIENT_KEY).get();
-        Channel channel0 = proxyChannels.remove(clientKey);
+        Channel channel0 = cmdChannels.remove(clientKey);
         if (channel != channel0) {
-            proxyChannels.put(clientKey, channel);
+            cmdChannels.put(clientKey, channel);
         }
 
         List<Integer> ports = channel.attr(CHANNEL_PORT).get();
         for (int port : ports) {
-            Channel proxyChannel = portChannelMapping.remove(port);
+            Channel proxyChannel = portCmdChannelMapping.remove(port);
             if (proxyChannel == null) {
                 continue;
             }
 
             // 在执行断连之前新的连接已经连上来了
             if (proxyChannel != channel) {
-                portChannelMapping.put(port, proxyChannel);
+                portCmdChannelMapping.put(port, proxyChannel);
             }
         }
 
@@ -214,8 +208,12 @@ public class ProxyChannelManager {
         }
     }
 
-    public static Channel getChannel(Integer port) {
-        return portChannelMapping.get(port);
+    public static Channel getCmdChannel(Integer port) {
+        return portCmdChannelMapping.get(port);
+    }
+
+    public static Channel getCmdChannel(String clientKey) {
+        return cmdChannels.get(clientKey);
     }
 
     /**
@@ -225,12 +223,12 @@ public class ProxyChannelManager {
      * @param userId
      * @param userChannel
      */
-    public static void addUserChannel(Channel proxyChannel, String userId, Channel userChannel) {
+    public static void addUserChannelToCmdChannel(Channel cmdChannel, String userId, Channel userChannel) {
         InetSocketAddress sa = (InetSocketAddress) userChannel.localAddress();
         String lanInfo = ProxyConfig.getInstance().getLanInfo(sa.getPort());
-        userChannel.attr(USER_ID).set(userId);
+        userChannel.attr(Constants.USER_ID).set(userId);
         userChannel.attr(REQUEST_LAN_INFO).set(lanInfo);
-        proxyChannel.attr(USER_CHANNELS).get().put(userId, userChannel);
+        cmdChannel.attr(USER_CHANNELS).get().put(userId, userChannel);
     }
 
     /**
@@ -240,9 +238,13 @@ public class ProxyChannelManager {
      * @param userId
      * @return
      */
-    public static Channel removeUserChannel(Channel proxyChannel, String userId) {
-        synchronized (proxyChannel) {
-            return proxyChannel.attr(USER_CHANNELS).get().remove(userId);
+    public static Channel removeUserChannelFromCmdChannel(Channel cmdChannel, String userId) {
+        if (cmdChannel.attr(USER_CHANNELS).get() == null) {
+            return null;
+        }
+
+        synchronized (cmdChannel) {
+            return cmdChannel.attr(USER_CHANNELS).get().remove(userId);
         }
     }
 
@@ -253,8 +255,8 @@ public class ProxyChannelManager {
      * @param userId
      * @return
      */
-    public static Channel getUserChannel(Channel proxyChannel, String userId) {
-        return proxyChannel.attr(USER_CHANNELS).get().get(userId);
+    public static Channel getUserChannel(Channel cmdChannel, String userId) {
+        return cmdChannel.attr(USER_CHANNELS).get().get(userId);
     }
 
     /**
@@ -264,7 +266,7 @@ public class ProxyChannelManager {
      * @return
      */
     public static String getUserChannelUserId(Channel userChannel) {
-        return userChannel.attr(USER_ID).get();
+        return userChannel.attr(Constants.USER_ID).get();
     }
 
     /**
@@ -278,58 +280,13 @@ public class ProxyChannelManager {
     }
 
     /**
-     * 获取代理客户端连接绑定的所有用户连接
+     * 获取代理控制客户端连接绑定的所有用户连接
      *
-     * @param proxyChannel
+     * @param cmdChannel
      * @return
      */
-    public static Map<String, Channel> getUserChannels(Channel proxyChannel) {
-        return proxyChannel.attr(USER_CHANNELS).get();
-    }
-
-    /**
-     * 更新用户连接是否可写状态
-     *
-     * @param userChannel
-     * @param client
-     * @param proxy
-     */
-    public static void setUserChannelReadability(Channel userChannel, Boolean realBackendServerChannelWriteability, Boolean proxyChannelWriteability) {
-        logger.info("update user channel readability, {} {} {}", userChannel, realBackendServerChannelWriteability, proxyChannelWriteability);
-        synchronized (userChannel) {
-            if (realBackendServerChannelWriteability != null) {
-                userChannel.attr(REAL_BACKEND_SERVER_CHANNEL_WRITEABLE).set(realBackendServerChannelWriteability);
-            }
-
-            if (proxyChannelWriteability != null) {
-                userChannel.attr(PROXY_CHANNEL_WRITEABLE).set(proxyChannelWriteability);
-            }
-
-            if (userChannel.attr(REAL_BACKEND_SERVER_CHANNEL_WRITEABLE).get() && userChannel.attr(PROXY_CHANNEL_WRITEABLE).get()) {
-
-                // 代理客户端与后端服务器连接状态均为可写时，用户连接状态为可读
-                userChannel.config().setOption(ChannelOption.AUTO_READ, true);
-            } else {
-                userChannel.config().setOption(ChannelOption.AUTO_READ, false);
-            }
-        }
-    }
-
-    /**
-     * 代理客户端连接写状态发生变化，更新关联的所有用户连接读状态
-     *
-     * @param proxyChannel
-     */
-    public static void notifyProxyChannelWritabilityChanged(Channel proxyChannel) {
-
-        Map<String, Channel> userChannels = getUserChannels(proxyChannel);
-        Iterator<String> ite = userChannels.keySet().iterator();
-
-        // ConcurrentHashMap支持遍历过程中增删元素，所以这里不需要与增删方法同步
-        while (ite.hasNext()) {
-            Channel userChannel = userChannels.get(ite.next());
-            setUserChannelReadability(userChannel, null, proxyChannel.isWritable());
-        }
+    public static Map<String, Channel> getUserChannels(Channel cmdChannel) {
+        return cmdChannel.attr(USER_CHANNELS).get();
     }
 
 }

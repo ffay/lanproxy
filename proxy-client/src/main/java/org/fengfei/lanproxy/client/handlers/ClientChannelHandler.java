@@ -2,6 +2,9 @@ package org.fengfei.lanproxy.client.handlers;
 
 import org.fengfei.lanproxy.client.ClientChannelMannager;
 import org.fengfei.lanproxy.client.listener.ChannelStatusListener;
+import org.fengfei.lanproxy.client.listener.ProxyChannelBorrowListener;
+import org.fengfei.lanproxy.common.Config;
+import org.fengfei.lanproxy.protocol.Constants;
 import org.fengfei.lanproxy.protocol.ProxyMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +16,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.SimpleChannelInboundHandler;
 
 /**
@@ -26,10 +30,13 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
 
     private Bootstrap bootstrap;
 
+    private Bootstrap proxyBootstrap;
+
     private ChannelStatusListener channelStatusListener;
 
-    public ClientChannelHandler(Bootstrap bootstrap, ChannelStatusListener channelStatusListener) {
+    public ClientChannelHandler(Bootstrap bootstrap, Bootstrap proxyBootstrap, ChannelStatusListener channelStatusListener) {
         this.bootstrap = bootstrap;
+        this.proxyBootstrap = proxyBootstrap;
         this.channelStatusListener = channelStatusListener;
     }
 
@@ -37,35 +44,22 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
     protected void channelRead0(ChannelHandlerContext ctx, ProxyMessage proxyMessage) throws Exception {
         logger.debug("recieved proxy message, type is {}", proxyMessage.getType());
         switch (proxyMessage.getType()) {
-        case ProxyMessage.TYPE_CONNECT:
-            handleConnectMessage(ctx, proxyMessage);
-            break;
-        case ProxyMessage.TYPE_DISCONNECT:
-            handleDisconnectMessage(ctx, proxyMessage);
-            break;
-        case ProxyMessage.TYPE_TRANSFER:
-            handleTransferMessage(ctx, proxyMessage);
-            break;
-        case ProxyMessage.TYPE_WRITE_CONTROL:
-            handleWriteControlMessage(ctx, proxyMessage);
-            break;
-        default:
-            break;
-        }
-    }
-
-    private void handleWriteControlMessage(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
-        String userId = proxyMessage.getUri();
-        Channel realServerChannel = ClientChannelMannager.getRealServerChannel(userId);
-        if (realServerChannel != null) {
-            boolean writeable = proxyMessage.getData()[0] == 0x01 ? true : false;
-            ClientChannelMannager.setRealServerChannelReadability(realServerChannel, null, writeable);
+            case ProxyMessage.TYPE_CONNECT:
+                handleConnectMessage(ctx, proxyMessage);
+                break;
+            case ProxyMessage.TYPE_DISCONNECT:
+                handleDisconnectMessage(ctx, proxyMessage);
+                break;
+            case ProxyMessage.P_TYPE_TRANSFER:
+                handleTransferMessage(ctx, proxyMessage);
+                break;
+            default:
+                break;
         }
     }
 
     private void handleTransferMessage(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
-        String userId = proxyMessage.getUri();
-        Channel realServerChannel = ClientChannelMannager.getRealServerChannel(userId);
+        Channel realServerChannel = ctx.channel().attr(Constants.NEXT_CHANNEL).get();
         if (realServerChannel != null) {
             ByteBuf buf = ctx.alloc().buffer(proxyMessage.getData().length);
             buf.writeBytes(proxyMessage.getData());
@@ -75,16 +69,17 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
     }
 
     private void handleDisconnectMessage(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
-        String userId = proxyMessage.getUri();
-        Channel realServerChannel = ClientChannelMannager.removeRealServerChannel(userId);
-        logger.debug("handleDisconnectMessage, {} {}", userId, realServerChannel);
+        Channel realServerChannel = ctx.channel().attr(Constants.NEXT_CHANNEL).get();
+        logger.debug("handleDisconnectMessage, {}", realServerChannel);
         if (realServerChannel != null) {
+            ctx.channel().attr(Constants.NEXT_CHANNEL).remove();
+            ClientChannelMannager.returnProxyChanel(ctx.channel());
             realServerChannel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
         }
     }
 
     private void handleConnectMessage(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
-        final Channel channel = ctx.channel();
+        final Channel cmdChannel = ctx.channel();
         final String userId = proxyMessage.getUri();
         String[] serverInfo = new String(proxyMessage.getData()).split(":");
         String ip = serverInfo[0];
@@ -93,23 +88,48 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
 
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {
+
+                // 连接后端服务器成功
                 if (future.isSuccess()) {
-                    Channel realServerChannel = future.channel();
-                    logger.debug("connect realserver success, {}, clientChannelWriteable {}", realServerChannel,
-                            channel.isWritable());
-                    ClientChannelMannager.setRealServerChannelReadability(realServerChannel, channel.isWritable(),
-                            true);
-                    ClientChannelMannager.addRealServerChannel(userId, realServerChannel);
-                    ClientChannelMannager.setRealServerChannelUserId(realServerChannel, userId);
-                    ProxyMessage proxyMessage = new ProxyMessage();
-                    proxyMessage.setType(ProxyMessage.TYPE_CONNECT);
-                    proxyMessage.setUri(userId);
-                    channel.writeAndFlush(proxyMessage);
+                    final Channel realServerChannel = future.channel();
+                    logger.debug("connect realserver success, {}", realServerChannel);
+
+                    realServerChannel.config().setOption(ChannelOption.AUTO_READ, false);
+
+                    // 获取连接
+                    ClientChannelMannager.borrowProxyChanel(proxyBootstrap, new ProxyChannelBorrowListener() {
+
+                        @Override
+                        public void success(Channel channel) {
+                            // 连接绑定
+                            channel.attr(Constants.NEXT_CHANNEL).set(realServerChannel);
+                            realServerChannel.attr(Constants.NEXT_CHANNEL).set(channel);
+
+                            // 远程绑定
+                            ProxyMessage proxyMessage = new ProxyMessage();
+                            proxyMessage.setType(ProxyMessage.TYPE_CONNECT);
+                            proxyMessage.setUri(userId + "@" + Config.getInstance().getStringValue("client.key"));
+                            channel.writeAndFlush(proxyMessage);
+
+                            realServerChannel.config().setOption(ChannelOption.AUTO_READ, true);
+                            ClientChannelMannager.addRealServerChannel(userId, realServerChannel);
+                            ClientChannelMannager.setRealServerChannelUserId(realServerChannel, userId);
+                        }
+
+                        @Override
+                        public void error(Throwable cause) {
+                            ProxyMessage proxyMessage = new ProxyMessage();
+                            proxyMessage.setType(ProxyMessage.TYPE_DISCONNECT);
+                            proxyMessage.setUri(userId);
+                            cmdChannel.writeAndFlush(proxyMessage);
+                        }
+                    });
+
                 } else {
                     ProxyMessage proxyMessage = new ProxyMessage();
                     proxyMessage.setType(ProxyMessage.TYPE_DISCONNECT);
                     proxyMessage.setUri(userId);
-                    channel.writeAndFlush(proxyMessage);
+                    cmdChannel.writeAndFlush(proxyMessage);
                 }
             }
         });
@@ -117,15 +137,31 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
 
     @Override
     public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
-        ClientChannelMannager.notifyChannelWritabilityChanged(ctx.channel());
+        Channel realServerChannel = ctx.channel().attr(Constants.NEXT_CHANNEL).get();
+        if (realServerChannel != null) {
+            realServerChannel.config().setOption(ChannelOption.AUTO_READ, ctx.channel().isWritable());
+        }
+
         super.channelWritabilityChanged(ctx);
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        ClientChannelMannager.setChannel(null);
-        ClientChannelMannager.clearRealServerChannels();
-        channelStatusListener.channelInactive(ctx);
+
+        // 控制连接
+        if (ClientChannelMannager.getCmdChannel() == ctx.channel()) {
+            ClientChannelMannager.setCmdChannel(null);
+            ClientChannelMannager.clearRealServerChannels();
+            channelStatusListener.channelInactive(ctx);
+        } else {
+            // 数据传输连接
+            Channel realServerChannel = ctx.channel().attr(Constants.NEXT_CHANNEL).get();
+            if (realServerChannel != null && realServerChannel.isActive()) {
+                realServerChannel.close();
+            }
+        }
+
+        ClientChannelMannager.removeProxyChanel(ctx.channel());
         super.channelInactive(ctx);
     }
 

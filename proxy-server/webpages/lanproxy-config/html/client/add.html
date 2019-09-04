@@ -1,29 +1,36 @@
 <div class="layui-tab layui-tab-brief">
     <ul class="layui-tab-title site-demo-title">
-        <li class="layui-this">添加客户端</li>
+        <li class="layui-this add-client-title"></li>
     </ul>
     <div class="main-content">
       <div class="layui-form-item">
-	    <label class="layui-form-label">备注名称</label>
+	    <label class="layui-form-label i18n-client-name"></label>
 	    <div class="layui-input-inline">
-	      <input type="text" name="name" autocomplete="off" placeholder="请输入客户端备注名称" class="layui-input">
+	      <input type="text" name="name" autocomplete="off" placeholder="" class="layui-input">
 	    </div>
 	  </div>
 	  <div class="layui-form-item">
-        <label class="layui-form-label">通信密钥</label>
+        <label class="layui-form-label i18n-client-key"></label>
         <div class="layui-input-inline">
-          <input type="text" name="clientKey" autocomplete="off" placeholder="请输入客户端通信密钥" class="layui-input">
+          <input type="text" name="clientKey" autocomplete="off" placeholder="" class="layui-input">
         </div>
-        <div class="layui-form-mid"><a class="layui-btn layui-btn-mini random-key random">生成随机密钥</a></div>
+        <div class="layui-form-mid"><a class="layui-btn layui-btn-mini random-key random"></a></div>
       </div>
        <div class="layui-form-item">
 	    <div class="layui-input-block">
-	      <button class="layui-btn add">提交添加</button>
+	      <button class="layui-btn add"></button>
 	    </div>
 	  </div>
     </div>
 </div>
 <script>
+$(".add-client-title").html($.i18n.prop('client.add'));
+$(".i18n-client-name").html($.i18n.prop('client.name'));
+$(".i18n-client-key").html($.i18n.prop('client.key'));
+$("input[name='name']").attr("placeholder", $.i18n.prop('client.name.placeholder'));
+$("input[name='clientKey']").attr("placeholder", $.i18n.prop('client.key.placeholder'));
+$(".random").html($.i18n.prop('client.randomkey'));
+$(".add").html($.i18n.prop('public.submit'));
 $(".random").click(function(){
 	$("input[name='clientKey']").val(uuid());
 });
@@ -31,12 +38,16 @@ $(".random").click(function(){
 $(".add").click(function(){
     var name = $("input[name='name']").val();
     if(name == ""){
-    	layer.alert("请输入客户端备注名称");
+    	layer.alert($.i18n.prop('client.notice.inputname'), {
+            title: $.i18n.prop('public.tips')
+        });
     	return;
     }
     var clientKey = $("input[name='clientKey']").val();
     if(clientKey == ""){
-        layer.alert("请输入客户端密钥");
+        layer.alert($.i18n.prop('client.notice.inputkey'), {
+            title: $.i18n.prop('public.tips')
+        });
         return;
     }
     clientList.push({
@@ -47,7 +58,7 @@ $(".add").click(function(){
 
     api_invoke("/config/update", clientList, function(data) {
         if (data.code == 20000) {
-            layer.alert('客户端添加成功', function(index){
+            layer.alert($.i18n.prop('client.notice.addsuccess'), {title: $.i18n.prop('public.tips')}, function(index){
                 layer.close(index);
                 location.reload();
             });
