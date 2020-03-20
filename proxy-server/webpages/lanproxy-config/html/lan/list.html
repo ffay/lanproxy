@@ -26,6 +26,8 @@
             <td>
               <a data-index="<%:=i%>" class="layui-btn layui-btn-mini mapping-edit"></a>
               <a data-index="<%:=i%>" class="layui-btn layui-btn-danger layui-btn-mini mapping-delete"></a>
+              <a data-index="<%:=i%>" class="layui-btn layui-btn-mini mapping-enable"></a>
+              <a data-index="<%:=i%>" class="layui-btn layui-btn-mini mapping-disable"></a>
             </td>
         </tr>
     <%}%>
@@ -45,6 +47,8 @@
 	$(".i18n-lan-options").html($.i18n.prop('public.options'));
 	$(".mapping-edit").html($.i18n.prop('public.edit'));
 	$(".mapping-delete").html($.i18n.prop('public.delete'));
+    $(".mapping-enable").html($.i18n.prop('public.enable'));
+    $(".mapping-disable").html($.i18n.prop('public.disable'));
 	$(".mapping-config").click(function() {
 		window.clientIndex = $(this).attr("data-index");
 		load_page("html/lan/list.html");
