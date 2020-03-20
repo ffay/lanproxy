@@ -65,10 +65,13 @@ $(".update").click(function(){
         return;
     }
 
+    var enable = clientList[clientIndex].proxyMappings[mappingIndex].enable;
+
     clientList[clientIndex].proxyMappings[mappingIndex]= {
     	name:name,
     	inetPort:inetPort,
-    	lan:lan
+    	lan:lan,
+        enable:enable
     };
 
     api_invoke("/config/update", clientList, function(data) {

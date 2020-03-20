@@ -65,6 +65,8 @@ public class ProxyChannelManager {
                         List<Integer> inetPorts = new ArrayList<Integer>(ProxyConfig.getInstance().getClientInetPorts(clientKey));
                         Set<Integer> inetPortSet = new HashSet<Integer>(inetPorts);
                         List<Integer> channelInetPorts = new ArrayList<Integer>(proxyChannel.attr(CHANNEL_PORT).get());
+                        ProxyConfig.Client cli =  ProxyConfig.getInstance().getClients(clientKey);
+                        if(cli == null) continue;
 
                         synchronized (portCmdChannelMapping) {
 
@@ -77,7 +79,7 @@ public class ProxyChannelManager {
 
                                 // 判断是否是同一个连接对象，有可能之前已经更换成其他client的连接了
                                 if (proxyChannel == channel) {
-                                    if (!inetPortSet.contains(chanelInetPort)) {
+                                    if (!inetPortSet.contains(chanelInetPort) || !cli.isProxyEnable(chanelInetPort)) {
 
                                         // 移除新配置中不包含的端口
                                         portCmdChannelMapping.remove(chanelInetPort);
@@ -92,8 +94,10 @@ public class ProxyChannelManager {
 
                             // 将新配置中增加的外网端口写入到映射配置中
                             for (int inetPort : inetPorts) {
-                                portCmdChannelMapping.put(inetPort, proxyChannel);
-                                proxyChannel.attr(CHANNEL_PORT).get().add(inetPort);
+                                if(cli.isProxyEnable(inetPort)) {
+                                    portCmdChannelMapping.put(inetPort, proxyChannel);
+                                    proxyChannel.attr(CHANNEL_PORT).get().add(inetPort);
+                                }
                             }
 
                             checkAndClearUserChannels(proxyChannel);

@@ -154,6 +154,13 @@ public class ProxyConfig implements Serializable {
         return clients;
     }
 
+    public Client getClients(String clientKey) {
+        for (Client cli: clients) {
+            if(cli.getClientKey().equals(clientKey))return cli;
+        }
+        return null;
+    }
+
     /**
      * 解析配置文件
      */
@@ -202,7 +209,9 @@ public class ProxyConfig implements Serializable {
                     throw new IllegalArgumentException("一个公网端口只能映射一个后端信息，不能重复: " + port);
                 }
 
-                inetPortLanInfoMapping.put(port, mapping.getLan());
+                if(mapping.getEnable()) {
+                    inetPortLanInfoMapping.put(port, mapping.getLan());
+                }
             }
         }
 
@@ -354,6 +363,12 @@ public class ProxyConfig implements Serializable {
             this.status = status;
         }
 
+        public Boolean isProxyEnable(int inetPort) {
+            for (ClientProxyMapping cli:proxyMappings) {
+                if(cli.getInetPort() == inetPort) return cli.getEnable();
+            }
+            return false;
+        }
     }
 
     /**
