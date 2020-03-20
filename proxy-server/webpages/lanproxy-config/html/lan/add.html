@@ -63,7 +63,8 @@ $(".add").click(function(){
     clientList[clientIndex].proxyMappings.push({
     	name:name,
     	inetPort:inetPort,
-    	lan:lan
+    	lan:lan,
+        enable:true
     });
 
     api_invoke("/config/update", clientList, function(data) {

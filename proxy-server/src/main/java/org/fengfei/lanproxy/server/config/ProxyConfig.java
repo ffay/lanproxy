@@ -373,6 +373,9 @@ public class ProxyConfig implements Serializable {
         /** 备注名称 */
         private String name;
 
+        /** 是否启用 */
+        private Boolean enable;
+
         public Integer getInetPort() {
             return inetPort;
         }
@@ -397,6 +400,13 @@ public class ProxyConfig implements Serializable {
             this.name = name;
         }
 
+        public Boolean getEnable() {
+            return enable;
+        }
+
+        public void setEnable(Boolean enable) {
+            this.enable = enable;
+        }
     }
 
     /**
