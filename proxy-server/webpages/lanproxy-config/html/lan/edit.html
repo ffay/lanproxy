@@ -2,42 +2,64 @@
     <ul class="layui-tab-title site-demo-title">
         <li class="layui-this i18n-lan-title"></li>
     </ul>
-    <div class="main-content">
-      <div class="layui-form-item">
-	    <label class="layui-form-label i18n-lan-name"></label>
-	    <div class="layui-input-block">
-	      <input type="text" name="name" autocomplete="off" placeholder="" class="layui-input">
-	    </div>
-	  </div>
+	<form class="layui-form" action="" lay-filter="example">
+		<div class="main-content">
+		  <div class="layui-form-item">
+			<label class="layui-form-label i18n-lan-name"></label>
+			<div class="layui-input-block">
+			  <input type="text" name="name" autocomplete="off" placeholder="" class="layui-input">
+			</div>
+		  </div>
+		  <div class="layui-form-item">
+			<label class="layui-form-label i18n-lan-inetport"></label>
+			<div class="layui-input-block">
+			  <input type="text" name="inetPort" autocomplete="off" placeholder="" class="layui-input">
+			</div>
+		  </div>
+		  <div class="layui-form-item">
+			<label class="layui-form-label i18n-lan-ip"></label>
+			<div class="layui-input-block">
+			  <input type="text" name="lan" autocomplete="off" placeholder="" class="layui-input">
+			</div>
+		  </div>
 	  <div class="layui-form-item">
-        <label class="layui-form-label i18n-lan-inetport"></label>
-        <div class="layui-input-block">
-          <input type="text" name="inetPort" autocomplete="off" placeholder="" class="layui-input">
-        </div>
-      </div>
-      <div class="layui-form-item">
-        <label class="layui-form-label i18n-lan-ip"></label>
-        <div class="layui-input-block">
-          <input type="text" name="lan" autocomplete="off" placeholder="" class="layui-input">
-        </div>
-      </div>
-       <div class="layui-form-item">
-	    <div class="layui-input-block">
-	      <button class="layui-btn update"></button>
-	      <button class="layui-btn layui-btn-primary back"></button>
-	    </div>
-	  </div>
-    </div>
+		<label class="layui-form-label i18n-lan-enable"></label>
+		<div class="layui-input-block">
+		  <input type="checkbox" name="switch" lay-skin="switch">
+		</div>
+	  </div>	  
+		   <div class="layui-form-item">
+			<div class="layui-input-block">
+			  <button class="layui-btn update"></button>
+			  <button class="layui-btn layui-btn-primary back"></button>
+			</div>
+		  </div>
+		</div>
+	</form>
 </div>
 <script>
+
+layui.use('form', function () {
+
+	var form = layui.form; //只有执行了这一步，部分表单元素才会自动修饰成功
+
+	form.val('example', {
+      "name": clientList[clientIndex].proxyMappings[mappingIndex].name
+      ,"inetPort": clientList[clientIndex].proxyMappings[mappingIndex].inetPort
+      ,"lan": clientList[clientIndex].proxyMappings[mappingIndex].lan
+      ,"switch": clientList[clientIndex].proxyMappings[mappingIndex].enable
+    });
+	
+	form.render();
+
+});
+		
 $(function(){
-	$("input[name='name']").val(clientList[clientIndex].proxyMappings[mappingIndex].name);
-	$("input[name='inetPort']").val(clientList[clientIndex].proxyMappings[mappingIndex].inetPort);
-	$("input[name='lan']").val(clientList[clientIndex].proxyMappings[mappingIndex].lan);
 	$(".i18n-lan-title").html($.i18n.prop('lan.editconfig'));
 	$(".i18n-lan-name").html($.i18n.prop('lan.name'));
 	$(".i18n-lan-inetport").html($.i18n.prop('lan.inetport'));
 	$(".i18n-lan-ip").html($.i18n.prop('lan.ip'));
+	$(".i18n-lan-enable").html($.i18n.prop('lan.enable'));
 	$("input[name='inetPort']").attr("placeholder", $.i18n.prop('lan.inetport.placeholder'));
 	$("input[name='lan']").attr("placeholder", $.i18n.prop('lan.ip.placeholder'));
 	$(".update").html($.i18n.prop('public.submit'));
@@ -65,7 +87,15 @@ $(".update").click(function(){
         return;
     }
 
-    var enable = clientList[clientIndex].proxyMappings[mappingIndex].enable;
+	//var form = layui.form;
+	//var data = form.val('example');
+    //alert(JSON.parse(data));
+	var enable = false;
+	$("[name='switch']:checkbox").each(function () {
+		if ($(this).is(":checked")) {
+			enable = true;
+		}
+	});
 
     clientList[clientIndex].proxyMappings[mappingIndex]= {
     	name:name,
