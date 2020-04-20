@@ -209,7 +209,7 @@ public class ProxyConfig implements Serializable {
                     throw new IllegalArgumentException("一个公网端口只能映射一个后端信息，不能重复: " + port);
                 }
 
-                if(mapping.getEnable()) {
+                if(mapping.getEnable() && client.isProxyEnable(port)) {
                     inetPortLanInfoMapping.put(port, mapping.getLan());
                 }
             }
