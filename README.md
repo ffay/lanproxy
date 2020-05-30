@@ -1,6 +1,6 @@
 ## lanproxy多用户版本（运营版）上线，欢迎体验
 
-https://nat.io2c.com
+https://nat.nioee.com
 
 ## 技术交流QQ群 1067424330
 
