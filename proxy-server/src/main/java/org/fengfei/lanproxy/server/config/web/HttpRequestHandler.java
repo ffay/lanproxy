@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.RandomAccessFile;
 import java.net.URI;
 import java.nio.charset.Charset;
-
+import java.util.Set;
 import org.fengfei.lanproxy.common.JsonUtil;
 
 import io.netty.buffer.Unpooled;
@@ -33,6 +33,8 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
             + "/webpages";
 
     private static final String SERVER_VS = "LPS-0.1";
+
+    private Set<String> urlSet = URLHelper.generateURLMap(null,PAGE_FOLDER,PAGE_FOLDER);
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
@@ -77,6 +79,8 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
         URI uri = new URI(request.getUri());
         String uriPath = uri.getPath();
         uriPath = uriPath.equals("/") ? "/index.html" : uriPath;
+        urlSet.add("/lanproxy-config/");
+
         String path = PAGE_FOLDER + uriPath;
         File rfile = new File(path);
         if (rfile.isDirectory()) {
@@ -92,6 +96,11 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
 
         if (HttpHeaders.is100ContinueExpected(request)) {
             send100Continue(ctx);
+        }
+        if(!urlSet.contains(uriPath)){
+            status = HttpResponseStatus.NON_AUTHORITATIVE_INFORMATION;
+            outputContent(ctx, request, status.code(), status.toString(), "text/html");
+            return;
         }
 
         String mimeType = MimeType.getMimeType(MimeType.parseSuffix(path));
