@@ -133,6 +133,8 @@ public class ProxyServerContainer implements Container, ConfigChangedListener {
             }
         });
 
+        //todo 暂时不开,等待客户端连接时才进行开启
+        //todo unchange时候关闭
         List<Integer> ports = ProxyConfig.getInstance().getUserPorts();
         for (int port : ports) {
             try {
@@ -171,7 +173,8 @@ public class ProxyServerContainer implements Container, ConfigChangedListener {
     }
 
     public static void main(String[] args) {
-        ContainerHelper.start(Arrays.asList(new Container[] { new ProxyServerContainer(), new WebConfigContainer() }));
+        //proxyServer 代理转发  WebConfig web后台处理
+        ContainerHelper.start(Arrays.asList(new ProxyServerContainer(), new WebConfigContainer()));
     }
 
 }

@@ -288,13 +288,7 @@ public class ProxyConfig implements Serializable {
      * @return
      */
     public List<Integer> getUserPorts() {
-        List<Integer> ports = new ArrayList<Integer>();
-        Iterator<Integer> ite = inetPortLanInfoMapping.keySet().iterator();
-        while (ite.hasNext()) {
-            ports.add(ite.next());
-        }
-
-        return ports;
+        return new ArrayList<>(inetPortLanInfoMapping.keySet());
     }
 
     public static ProxyConfig getInstance() {

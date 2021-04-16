@@ -29,8 +29,7 @@ import io.netty.handler.stream.ChunkedNioFile;
 
 public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
-    private static final String PAGE_FOLDER = System.getProperty("app.home", System.getProperty("user.dir"))
-            + "/webpages";
+    private static final String PAGE_FOLDER = "./proxy-server/webpages";
 
     private static final String SERVER_VS = "LPS-0.1";
 
@@ -51,7 +50,7 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
     }
 
     private void outputContent(ChannelHandlerContext ctx, FullHttpRequest request, int code, String content,
-            String mimeType) {
+                               String mimeType) {
 
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(code),
                 Unpooled.wrappedBuffer(content.getBytes(Charset.forName("UTF-8"))));
@@ -101,7 +100,7 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
             raf = new RandomAccessFile(rfile, "r");
             length = raf.length();
         } finally {
-            if (length < 0 && raf != null) {
+            if (length < 0) {
                 raf.close();
             }
         }

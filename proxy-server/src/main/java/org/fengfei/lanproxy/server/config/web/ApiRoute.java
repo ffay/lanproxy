@@ -16,16 +16,19 @@ import io.netty.handler.codec.http.FullHttpRequest;
  * 接口路由管理
  *
  * @author fengfei
- *
  */
 public class ApiRoute {
 
     private static Logger logger = LoggerFactory.getLogger(ApiRoute.class);
 
-    /** 接口路由 */
+    /**
+     * 接口路由
+     */
     private static Map<String, RequestHandler> routes = new ConcurrentHashMap<String, RequestHandler>();
 
-    /** 拦截器，初始化后不会在变化 */
+    /**
+     * 拦截器，初始化后不会在变化
+     */
     private static List<RequestMiddleware> middlewares = new ArrayList<RequestMiddleware>();
 
     /**
@@ -85,10 +88,9 @@ public class ApiRoute {
             if (ex instanceof ContextException) {
                 return ResponseInfo.build(((ContextException) ex).getCode(), ex.getMessage());
             }
-
             logger.error("request error", ex);
+            throw new RuntimeException(ex);
         }
 
-        return null;
     }
 }
