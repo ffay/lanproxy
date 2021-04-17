@@ -1,31 +1,17 @@
 package org.fengfei.lanproxy.server.config.web;
 
+import io.netty.buffer.Unpooled;
+import io.netty.channel.*;
+import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.HttpHeaders.Names;
+import io.netty.handler.ssl.SslHandler;
+import io.netty.handler.stream.ChunkedNioFile;
+import org.fengfei.lanproxy.common.JsonUtil;
+
 import java.io.File;
 import java.io.RandomAccessFile;
 import java.net.URI;
-import java.nio.charset.Charset;
-
-import org.fengfei.lanproxy.common.JsonUtil;
-
-import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.DefaultFileRegion;
-import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.DefaultHttpResponse;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpHeaders.Names;
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpVersion;
-import io.netty.handler.codec.http.LastHttpContent;
-import io.netty.handler.ssl.SslHandler;
-import io.netty.handler.stream.ChunkedNioFile;
+import java.nio.charset.StandardCharsets;
 
 public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
@@ -53,7 +39,7 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
                                String mimeType) {
 
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(code),
-                Unpooled.wrappedBuffer(content.getBytes(Charset.forName("UTF-8"))));
+                Unpooled.wrappedBuffer(content.getBytes(StandardCharsets.UTF_8)));
         response.headers().set(Names.CONTENT_TYPE, mimeType);
         response.headers().set(Names.CONTENT_LENGTH, response.content().readableBytes());
         response.headers().set(Names.SERVER, SERVER_VS);

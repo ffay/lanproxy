@@ -25,13 +25,14 @@ import com.google.gson.reflect.TypeToken;
  * server config
  *
  * @author fengfei
- *
  */
 public class ProxyConfig implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /** 配置文件为config.json */
+    /**
+     * 配置文件为config.json
+     */
     public static final String CONFIG_FILE;
 
     private static Logger logger = LoggerFactory.getLogger(ProxyConfig.class);
@@ -48,37 +49,60 @@ public class ProxyConfig implements Serializable {
         CONFIG_FILE = dataPath + "/config.json";
     }
 
-    /** 代理服务器绑定主机host */
+    /**
+     * 代理服务器绑定主机host
+     */
     private String serverBind;
 
-    /** 代理服务器与代理客户端通信端口 */
+    /**
+     * 代理服务器与代理客户端通信端口
+     */
     private Integer serverPort;
 
-    /** 配置服务绑定主机host */
+    /**
+     * 配置服务绑定主机host
+     */
     private String configServerBind;
 
-    /** 配置服务端口 */
+    /**
+     * 配置服务端口
+     */
     private Integer configServerPort;
 
-    /** 配置服务管理员用户名 */
+    /**
+     * 配置服务管理员用户名
+     */
     private String configAdminUsername;
 
-    /** 配置服务管理员密码 */
+    /**
+     * 配置服务管理员密码
+     */
     private String configAdminPassword;
 
-    /** 代理客户端，支持多个客户端 */
+    /**
+     * 代理客户端，支持多个客户端
+     */
     private List<Client> clients;
 
-    /** 更新配置后保证在其他线程即时生效 */
-    private static ProxyConfig instance = new ProxyConfig();;
+    /**
+     * 更新配置后保证在其他线程即时生效
+     */
+    private static ProxyConfig instance = new ProxyConfig();
+    ;
 
-    /** 代理服务器为各个代理客户端（key）开启对应的端口列表（value） */
+    /**
+     * 代理服务器为各个代理客户端（key）开启对应的端口列表（value）
+     */
     private volatile Map<String, List<Integer>> clientInetPortMapping = new HashMap<String, List<Integer>>();
 
-    /** 代理服务器上的每个对外端口（key）对应的代理客户端背后的真实服务器信息（value） */
+    /**
+     * 代理服务器上的每个对外端口（key）对应的代理客户端背后的真实服务器信息（value）
+     */
     private volatile Map<Integer, String> inetPortLanInfoMapping = new HashMap<Integer, String>();
 
-    /** 配置变化监听器 */
+    /**
+     * 配置变化监听器
+     */
     private List<ConfigChangedListener> configChangedListeners = new ArrayList<ConfigChangedListener>();
 
     private ProxyConfig() {
@@ -299,19 +323,24 @@ public class ProxyConfig implements Serializable {
      * 代理客户端
      *
      * @author fengfei
-     *
      */
     public static class Client implements Serializable {
 
         private static final long serialVersionUID = 1L;
 
-        /** 客户端备注名称 */
+        /**
+         * 客户端备注名称
+         */
         private String name;
 
-        /** 代理客户端唯一标识key */
+        /**
+         * 代理客户端唯一标识key
+         */
         private String clientKey;
 
-        /** 代理客户端与其后面的真实服务器映射关系 */
+        /**
+         * 代理客户端与其后面的真实服务器映射关系
+         */
         private List<ClientProxyMapping> proxyMappings;
 
         private int status;
@@ -354,17 +383,22 @@ public class ProxyConfig implements Serializable {
      * 代理客户端与其后面真实服务器映射关系
      *
      * @author fengfei
-     *
      */
     public static class ClientProxyMapping {
 
-        /** 代理服务器端口 */
+        /**
+         * 代理服务器端口
+         */
         private Integer inetPort;
 
-        /** 需要代理的网络信息（代理客户端能够访问），格式 192.168.1.99:80 (必须带端口) */
+        /**
+         * 需要代理的网络信息（代理客户端能够访问），格式 192.168.1.99:80 (必须带端口)
+         */
         private String lan;
 
-        /** 备注名称 */
+        /**
+         * 备注名称
+         */
         private String name;
 
         public Integer getInetPort() {
@@ -397,10 +431,13 @@ public class ProxyConfig implements Serializable {
      * 配置更新回调
      *
      * @author fengfei
-     *
      */
-    public static interface ConfigChangedListener {
+    public interface ConfigChangedListener {
 
         void onChanged();
+    }
+
+    public List<ConfigChangedListener> getConfigChangedListeners() {
+        return configChangedListeners;
     }
 }

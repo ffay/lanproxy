@@ -5,6 +5,7 @@ import java.util.List;
 import org.fengfei.lanproxy.protocol.Constants;
 import org.fengfei.lanproxy.protocol.ProxyMessage;
 import org.fengfei.lanproxy.server.ProxyChannelManager;
+import org.fengfei.lanproxy.server.ProxyServerContainer;
 import org.fengfei.lanproxy.server.config.ProxyConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,13 +19,24 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.SimpleChannelInboundHandler;
 
 /**
- *
  * @author fengfei
- *
  */
 public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessage> {
 
     private static Logger logger = LoggerFactory.getLogger(ServerChannelHandler.class);
+
+
+    public ServerChannelHandler() {
+        super();
+    }
+
+    private ProxyServerContainer proxyServerContainer;
+
+    public ServerChannelHandler(ProxyServerContainer proxyServerContainer) {
+        super();
+        this.proxyServerContainer = proxyServerContainer;
+    }
+
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ProxyMessage proxyMessage) throws Exception {
@@ -148,6 +160,8 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
 
         logger.info("set port => channel, {}, {}, {}", clientKey, ports, ctx.channel());
         ProxyChannelManager.addCmdChannel(ports, clientKey, ctx.channel());
+        //开启当前client所需的公网端口
+        proxyServerContainer.startClientPorts(clientKey, ports, ctx.channel());
     }
 
     @Override
@@ -165,6 +179,7 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
         Channel userChannel = ctx.channel().attr(Constants.NEXT_CHANNEL).get();
         if (userChannel != null && userChannel.isActive()) {
             String clientKey = ctx.channel().attr(Constants.CLIENT_KEY).get();
+            proxyServerContainer.closeClientPorts(clientKey);
             String userId = ctx.channel().attr(Constants.USER_ID).get();
             Channel cmdChannel = ProxyChannelManager.getCmdChannel(clientKey);
             if (cmdChannel != null) {
@@ -178,7 +193,10 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
             userChannel.close();
         } else {
             ProxyChannelManager.removeCmdChannel(ctx.channel());
+            proxyServerContainer.closeClientPorts(ctx.channel());
         }
+
+
 
         super.channelInactive(ctx);
     }
