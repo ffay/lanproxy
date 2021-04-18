@@ -85,7 +85,7 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
             return;
         }
 
-        Channel cmdChannel = ProxyChannelManager.getCmdChannel(clientKey);
+        Channel cmdChannel = ProxyChannelManager.getClientChannel(clientKey);
         if (cmdChannel == null) {
             logger.warn("ConnectMessage:error cmd channel key {}", ctx.channel().attr(Constants.CLIENT_KEY).get());
             return;
@@ -116,7 +116,7 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
             return;
         }
 
-        Channel cmdChannel = ProxyChannelManager.getCmdChannel(tokens[1]);
+        Channel cmdChannel = ProxyChannelManager.getClientChannel(tokens[1]);
         if (cmdChannel == null) {
             ctx.channel().close();
             logger.warn("ConnectMessage:error cmd channel key {}", tokens[1]);
@@ -151,7 +151,7 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
             return;
         }
 
-        Channel channel = ProxyChannelManager.getCmdChannel(clientKey);
+        Channel channel = ProxyChannelManager.getClientChannel(clientKey);
         if (channel != null) {
             logger.warn("exist channel for key {}, {}", clientKey, channel);
             ctx.channel().close();
@@ -181,7 +181,7 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
             String clientKey = ctx.channel().attr(Constants.CLIENT_KEY).get();
             proxyServerContainer.closeClientPorts(clientKey);
             String userId = ctx.channel().attr(Constants.USER_ID).get();
-            Channel cmdChannel = ProxyChannelManager.getCmdChannel(clientKey);
+            Channel cmdChannel = ProxyChannelManager.getClientChannel(clientKey);
             if (cmdChannel != null) {
                 ProxyChannelManager.removeUserChannelFromCmdChannel(cmdChannel, userId);
             } else {

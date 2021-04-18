@@ -69,6 +69,17 @@ public class ProxyConfig implements Serializable {
      */
     private Integer configServerPort;
 
+
+    /**
+     * HTTP代理服务 绑定主机host
+     */
+    private String httpServerProxyBind;
+
+    /**
+     * HTTP代理服务 端口
+     */
+    private Integer httpServerProxyPort;
+
     /**
      * 配置服务管理员用户名
      */
@@ -78,6 +89,14 @@ public class ProxyConfig implements Serializable {
      * 配置服务管理员密码
      */
     private String configAdminPassword;
+
+    public String getHttpServerProxyBind() {
+        return httpServerProxyBind;
+    }
+
+    public Integer getHttpServerProxyPort() {
+        return httpServerProxyPort;
+    }
 
     /**
      * 代理客户端，支持多个客户端
@@ -110,6 +129,12 @@ public class ProxyConfig implements Serializable {
         // 代理服务器主机和端口配置初始化
         this.serverPort = Config.getInstance().getIntValue("server.port");
         this.serverBind = Config.getInstance().getStringValue("server.bind", "0.0.0.0");
+
+        /**
+         * HTTP代理服务 绑定主机host 端口
+         */
+        this.httpServerProxyPort = Config.getInstance().getIntValue("http.proxy.server.port");
+        this.httpServerProxyBind = Config.getInstance().getStringValue("http.proxy.server.bind", "0.0.0.0");
 
         // 配置服务器主机和端口配置初始化
         this.configServerPort = Config.getInstance().getIntValue("config.server.port");

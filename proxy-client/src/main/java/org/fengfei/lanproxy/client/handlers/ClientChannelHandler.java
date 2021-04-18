@@ -20,22 +20,22 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.SimpleChannelInboundHandler;
 
 /**
- *
  * @author fengfei
- *
  */
 public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessage> {
 
     private static Logger logger = LoggerFactory.getLogger(ClientChannelHandler.class);
 
-    private Bootstrap bootstrap;
+    private Bootstrap realServerBootstrap;
 
     private Bootstrap proxyBootstrap;
 
     private ChannelStatusListener channelStatusListener;
 
-    public ClientChannelHandler(Bootstrap bootstrap, Bootstrap proxyBootstrap, ChannelStatusListener channelStatusListener) {
-        this.bootstrap = bootstrap;
+    private static Channel arealServerChannel;
+
+    public ClientChannelHandler(Bootstrap realServerBootstrap, Bootstrap proxyBootstrap, ChannelStatusListener channelStatusListener) {
+        this.realServerBootstrap = realServerBootstrap;
         this.proxyBootstrap = proxyBootstrap;
         this.channelStatusListener = channelStatusListener;
     }
@@ -58,8 +58,12 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
         }
     }
 
+//    private static Channel realServerChannel;
+
     private void handleTransferMessage(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
-        Channel realServerChannel = ctx.channel().attr(Constants.NEXT_CHANNEL).get();
+//        Channel realServerChannel = ctx.channel().attr(Constants.NEXT_CHANNEL).get();
+        Channel realServerChannel = arealServerChannel;
+
         if (realServerChannel != null) {
             ByteBuf buf = ctx.alloc().buffer(proxyMessage.getData().length);
             buf.writeBytes(proxyMessage.getData());
@@ -84,10 +88,10 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
         String[] serverInfo = new String(proxyMessage.getData()).split(":");
         String ip = serverInfo[0];
         int port = Integer.parseInt(serverInfo[1]);
-        bootstrap.connect(ip, port).addListener(new ChannelFutureListener() {
+        realServerBootstrap.connect(ip, port).addListener(new ChannelFutureListener() {
 
             @Override
-            public void operationComplete(ChannelFuture future) throws Exception {
+            public void operationComplete(ChannelFuture future) {
 
                 // 连接后端服务器成功
                 if (future.isSuccess()) {
@@ -104,7 +108,7 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
                             // 连接绑定
                             channel.attr(Constants.NEXT_CHANNEL).set(realServerChannel);
                             realServerChannel.attr(Constants.NEXT_CHANNEL).set(channel);
-
+                            arealServerChannel = realServerChannel;
                             // 远程绑定
                             ProxyMessage proxyMessage = new ProxyMessage();
                             proxyMessage.setType(ProxyMessage.TYPE_CONNECT);

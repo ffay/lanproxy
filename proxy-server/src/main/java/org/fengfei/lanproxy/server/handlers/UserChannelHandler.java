@@ -54,10 +54,10 @@ public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         Channel userChannel = ctx.channel();
         InetSocketAddress sa = (InetSocketAddress) userChannel.localAddress();
-        Channel cmdChannel = ProxyChannelManager.getCmdChannel(sa.getPort());
+        //根据端口找到对应的代理客户端
+        Channel clientChannel = ProxyChannelManager.getClientChannel(sa.getPort());
 
-        if (cmdChannel == null) {
-
+        if (clientChannel == null) {
             // 该端口还没有代理客户端
             ctx.channel().close();
         } else {
@@ -65,12 +65,12 @@ public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
             String lanInfo = ProxyConfig.getInstance().getLanInfo(sa.getPort());
             // 用户连接到代理服务器时，设置用户连接不可读，等待代理后端服务器连接成功后再改变为可读状态
             userChannel.config().setOption(ChannelOption.AUTO_READ, false);
-            ProxyChannelManager.addUserChannelToCmdChannel(cmdChannel, userId, userChannel);
+            ProxyChannelManager.addUserChannelToCmdChannel(clientChannel, userId, userChannel);
             ProxyMessage proxyMessage = new ProxyMessage();
             proxyMessage.setType(ProxyMessage.TYPE_CONNECT);
             proxyMessage.setUri(userId);
             proxyMessage.setData(lanInfo.getBytes());
-            cmdChannel.writeAndFlush(proxyMessage);
+            clientChannel.writeAndFlush(proxyMessage);
         }
 
         super.channelActive(ctx);
@@ -82,7 +82,7 @@ public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
         // 通知代理客户端
         Channel userChannel = ctx.channel();
         InetSocketAddress sa = (InetSocketAddress) userChannel.localAddress();
-        Channel cmdChannel = ProxyChannelManager.getCmdChannel(sa.getPort());
+        Channel cmdChannel = ProxyChannelManager.getClientChannel(sa.getPort());
         if (cmdChannel == null) {
 
             // 该端口还没有代理客户端
@@ -116,7 +116,7 @@ public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
         // 通知代理客户端
         Channel userChannel = ctx.channel();
         InetSocketAddress sa = (InetSocketAddress) userChannel.localAddress();
-        Channel cmdChannel = ProxyChannelManager.getCmdChannel(sa.getPort());
+        Channel cmdChannel = ProxyChannelManager.getClientChannel(sa.getPort());
         if (cmdChannel == null) {
 
             // 该端口还没有代理客户端

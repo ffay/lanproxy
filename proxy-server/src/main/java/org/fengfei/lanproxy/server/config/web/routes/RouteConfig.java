@@ -82,7 +82,7 @@ public class RouteConfig {
             public ResponseInfo request(FullHttpRequest request) {
                 List<Client> clients = ProxyConfig.getInstance().getClients();
                 for (Client client : clients) {
-                    Channel channel = ProxyChannelManager.getCmdChannel(client.getClientKey());
+                    Channel channel = ProxyChannelManager.getClientChannel(client.getClientKey());
                     if (channel != null) {
                         client.setStatus(1);// online
                     } else {

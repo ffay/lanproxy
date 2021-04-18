@@ -52,7 +52,7 @@ public class WebConfigContainer implements Container {
         try {
             httpServerBootstrap.bind(ProxyConfig.getInstance().getConfigServerBind(),
                     ProxyConfig.getInstance().getConfigServerPort()).get();
-            logger.info("http server start on port " + ProxyConfig.getInstance().getConfigServerPort());
+            logger.info("http web config server start on port " + ProxyConfig.getInstance().getConfigServerPort());
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
