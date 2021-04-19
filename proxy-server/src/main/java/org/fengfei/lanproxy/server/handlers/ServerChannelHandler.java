@@ -63,6 +63,7 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
     }
 
     private void handleTransferMessage(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
+        //todo 多用户不同地址访问同一端口如何处理
         Channel userChannel = ctx.channel().attr(Constants.NEXT_CHANNEL).get();
         if (userChannel != null) {
             ByteBuf buf = ctx.alloc().buffer(proxyMessage.getData().length);
@@ -195,7 +196,6 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
             ProxyChannelManager.removeCmdChannel(ctx.channel());
             proxyServerContainer.closeClientPorts(ctx.channel());
         }
-
 
 
         super.channelInactive(ctx);

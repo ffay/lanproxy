@@ -61,9 +61,7 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
 //    private static Channel realServerChannel;
 
     private void handleTransferMessage(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
-//        Channel realServerChannel = ctx.channel().attr(Constants.NEXT_CHANNEL).get();
-        Channel realServerChannel = arealServerChannel;
-
+        Channel realServerChannel = ctx.channel().attr(Constants.NEXT_CHANNEL).get();
         if (realServerChannel != null) {
             ByteBuf buf = ctx.alloc().buffer(proxyMessage.getData().length);
             buf.writeBytes(proxyMessage.getData());
@@ -72,17 +70,17 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
         }
     }
 
-    private void handleDisconnectMessage(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
-        Channel realServerChannel = ctx.channel().attr(Constants.NEXT_CHANNEL).get();
+    private void handleDisconnectMessage(ChannelHandlerContext proxyCtx, ProxyMessage proxyMessage) {
+        Channel realServerChannel = proxyCtx.channel().attr(Constants.NEXT_CHANNEL).get();
         logger.debug("handleDisconnectMessage, {}", realServerChannel);
         if (realServerChannel != null) {
-            ctx.channel().attr(Constants.NEXT_CHANNEL).remove();
-            ClientChannelMannager.returnProxyChanel(ctx.channel());
+            proxyCtx.channel().attr(Constants.NEXT_CHANNEL).remove();
+            ClientChannelMannager.returnProxyChanel(proxyCtx.channel());
             realServerChannel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
         }
     }
 
-    private void handleConnectMessage(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
+    private void handleConnectMessage(final ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
         final Channel cmdChannel = ctx.channel();
         final String userId = proxyMessage.getUri();
         String[] serverInfo = new String(proxyMessage.getData()).split(":");
@@ -100,20 +98,18 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
 
                     realServerChannel.config().setOption(ChannelOption.AUTO_READ, false);
 
-                    // 获取连接
-                    ClientChannelMannager.borrowProxyChanel(proxyBootstrap, new ProxyChannelBorrowListener() {
+                    ProxyChannelBorrowListener proxyChannelBorrowListener = new ProxyChannelBorrowListener() {
 
                         @Override
-                        public void success(Channel channel) {
+                        public void success(Channel proxyChannel) {
                             // 连接绑定
-                            channel.attr(Constants.NEXT_CHANNEL).set(realServerChannel);
-                            realServerChannel.attr(Constants.NEXT_CHANNEL).set(channel);
-                            arealServerChannel = realServerChannel;
+                            proxyChannel.attr(Constants.NEXT_CHANNEL).set(realServerChannel);
+                            realServerChannel.attr(Constants.NEXT_CHANNEL).set(proxyChannel);
                             // 远程绑定
                             ProxyMessage proxyMessage = new ProxyMessage();
                             proxyMessage.setType(ProxyMessage.TYPE_CONNECT);
                             proxyMessage.setUri(userId + "@" + Config.getInstance().getStringValue("client.key"));
-                            channel.writeAndFlush(proxyMessage);
+                            proxyChannel.writeAndFlush(proxyMessage);
 
                             realServerChannel.config().setOption(ChannelOption.AUTO_READ, true);
                             ClientChannelMannager.addRealServerChannel(userId, realServerChannel);
@@ -127,7 +123,10 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
                             proxyMessage.setUri(userId);
                             cmdChannel.writeAndFlush(proxyMessage);
                         }
-                    });
+                    };
+                    // 获取连接
+                    ClientChannelMannager.borrowProxyChanel(proxyBootstrap, proxyChannelBorrowListener);
+
 
                 } else {
                     ProxyMessage proxyMessage = new ProxyMessage();
@@ -151,6 +150,8 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+
+        logger.info("channel Inactive->{}", ctx.channel());
 
         // 控制连接
         if (ClientChannelMannager.getCmdChannel() == ctx.channel()) {

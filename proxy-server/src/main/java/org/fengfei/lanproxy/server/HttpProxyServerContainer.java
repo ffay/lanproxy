@@ -23,6 +23,7 @@ import org.fengfei.lanproxy.server.config.web.routes.RouteConfig;
 import org.fengfei.lanproxy.server.handlers.ServerChannelHandler;
 import org.fengfei.lanproxy.server.handlers.UserChannelHandler;
 import org.fengfei.lanproxy.server.handlers.UserChannelHttpHandler;
+import org.fengfei.lanproxy.server.handlers.UserChannelHttpHandler2;
 import org.fengfei.lanproxy.server.metrics.handler.BytesMetricsHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,12 +79,8 @@ public class HttpProxyServerContainer implements Container {
                     @Override
                     public void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
-                        pipeline.addLast(new HttpServerCodec());
-                        pipeline.addLast(new HttpObjectAggregator(64 * 1024));
-                        pipeline.addLast(new ChunkedWriteHandler());
+                        ch.pipeline().addFirst(new BytesMetricsHandler());
                         pipeline.addLast(new UserChannelHttpHandler());
-//                        ch.pipeline().addFirst(new BytesMetricsHandler());
-//                        ch.pipeline().addLast(new UserChannelHandler());
                     }
                 });
 
