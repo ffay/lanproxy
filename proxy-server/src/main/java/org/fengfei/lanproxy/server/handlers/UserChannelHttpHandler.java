@@ -57,34 +57,71 @@ public class UserChannelHttpHandler extends SimpleChannelInboundHandler<ByteBuf>
         this.proxyChannelManager = proxyChannelManager;
     }
 
+    private static Set<String> clientKeySet = new HashSet<>();
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf byteBuf) throws Exception {
+
+        Channel userChannel = ctx.channel();
+
         //http 请求
         //此处做编解码操作
 
-        String value = "GET / HTTP/1.1\n" +
-                "Host: 127.0.0.1:7788\n" +
-                "Connection: keep-alive\n" +
-                "Cache-Control: max-age=0\n" +
-                "sec-ch-ua: \" Not A;Brand\";v=\"99\", \"Chromium\";v=\"90\", \"Microsoft Edge\";v=\"90\"\n" +
-                "sec-ch-ua-mobile: ?0\n" +
-                "Upgrade-Insecure-Requests: 1\n" +
-                "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.72 Safari/537.36 Edg/90.0.818.39\n" +
-                "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9\n" +
-                "Sec-Fetch-Site: none\n" +
-                "Sec-Fetch-Mode: navigate\n" +
-                "Sec-Fetch-User: ?1\n" +
-                "Sec-Fetch-Dest: document\n" +
-                "Accept-Encoding: gzip, deflate, br\n" +
-                "Accept-Language: zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6\n" +
-                "Cookie: token=8b6cadfe556a4e35a1b19a085c6b31df\n" +
-                "\n";
-        byte[] bytes = value.getBytes();
+//        String value = "GET / HTTP/1.1\n" +
+//                "Host: 127.0.0.1:7788\n" +
+//                "Connection: keep-alive\n" +
+//                "Cache-Control: max-age=0\n" +
+//                "sec-ch-ua: \" Not A;Brand\";v=\"99\", \"Chromium\";v=\"90\", \"Microsoft Edge\";v=\"90\"\n" +
+//                "sec-ch-ua-mobile: ?0\n" +
+//                "Upgrade-Insecure-Requests: 1\n" +
+//                "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.72 Safari/537.36 Edg/90.0.818.39\n" +
+//                "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9\n" +
+//                "Sec-Fetch-Site: none\n" +
+//                "Sec-Fetch-Mode: navigate\n" +
+//                "Sec-Fetch-User: ?1\n" +
+//                "Sec-Fetch-Dest: document\n" +
+//                "Accept-Encoding: gzip, deflate, br\n" +
+//                "Accept-Language: zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6\n" +
+//                "Cookie: token=8b6cadfe556a4e35a1b19a085c6b31df\n" +
+//                "\n";
+//        byte[] bytes = value.getBytes();
+
+        byte[] bytes = new byte[byteBuf.readableBytes()];
+        byteBuf.readBytes(bytes);
+        String httpContent = new String(bytes);
+        int fSpaceIndex = httpContent.indexOf(" ");
+        int sSpaceIndex = httpContent.indexOf(" ", fSpaceIndex + 1);
+        String httpMethod = httpContent.substring(0, fSpaceIndex);
+        String url = httpContent.substring(fSpaceIndex + 1, sSpaceIndex);
+        if (url.equals("/")) {
+            logger.error("未指定clientKey");
+        }
+        if (!url.endsWith("/")) {
+            url += "/";
+        }
+        int i = url.indexOf("/", 1);
+        String clientKey = url.substring(1, i);
+        url = url.substring(i);
+        httpContent = httpMethod + " " + url + httpContent.substring(sSpaceIndex);
+        bytes = httpContent.getBytes();
+
+        if (!clientKeySet.contains(clientKey)) {
+            Channel clientChannel = ProxyChannelManager.getClientChannel(clientKey);
+            String userId = newUserId();
+            String lanInfo = "127.0.0.1:8000";
+            // 用户连接到代理服务器时，设置用户连接不可读，等待代理后端服务器连接成功后再改变为可读状态
+            userChannel.config().setOption(ChannelOption.AUTO_READ, false);
+            ProxyChannelManager.addUserChannelToCmdChannel(clientChannel, userId, userChannel);
+            ProxyMessage proxyMessage = new ProxyMessage();
+            proxyMessage.setType(ProxyMessage.TYPE_CONNECT);
+            proxyMessage.setUri(userId);
+            proxyMessage.setData(lanInfo.getBytes());
+            clientKeySet.add(clientKey);
+            clientChannel.writeAndFlush(proxyMessage);
+        }
 
         // 通知代理客户端
-        Channel userChannel = ctx.channel();
-        Channel proxyChannel = userChannel.attr(Constants.NEXT_CHANNEL).get();
+        Channel proxyChannel = ProxyChannelManager.getClientChannel(clientKey);
         if (proxyChannel == null) {
             // 该端口还没有代理客户端
             ctx.channel().close();
@@ -97,7 +134,6 @@ public class UserChannelHttpHandler extends SimpleChannelInboundHandler<ByteBuf>
 
             proxyMessage.setData(bytes);
             proxyChannel.writeAndFlush(proxyMessage);
-//            outputContent(ctx, httpRequest, 200, new String(proxyMessage.getData()), "text/html");
         }
     }
 
