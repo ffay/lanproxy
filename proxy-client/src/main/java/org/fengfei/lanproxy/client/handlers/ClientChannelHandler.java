@@ -58,12 +58,12 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
         }
     }
 
-//    private static Channel realServerChannel;
 
-    private void handleTransferMessage(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
-        Channel realServerChannel = ctx.channel().attr(Constants.NEXT_CHANNEL).get();
+
+    private void handleTransferMessage(ChannelHandlerContext proxyCtx , ProxyMessage proxyMessage) {
+        Channel realServerChannel = proxyCtx.channel().attr(Constants.NEXT_CHANNEL).get();
         if (realServerChannel != null) {
-            ByteBuf buf = ctx.alloc().buffer(proxyMessage.getData().length);
+            ByteBuf buf = proxyCtx.alloc().buffer(proxyMessage.getData().length);
             buf.writeBytes(proxyMessage.getData());
             logger.debug("write data to real server, {}", realServerChannel);
             realServerChannel.writeAndFlush(buf);
@@ -80,8 +80,8 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
         }
     }
 
-    private void handleConnectMessage(final ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
-        final Channel cmdChannel = ctx.channel();
+    private void handleConnectMessage(final ChannelHandlerContext clientCtx, ProxyMessage proxyMessage) {
+        final Channel clientChannel = clientCtx.channel();
         final String userId = proxyMessage.getUri();
         String[] serverInfo = new String(proxyMessage.getData()).split(":");
         String ip = serverInfo[0];
@@ -121,7 +121,7 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
                             ProxyMessage proxyMessage = new ProxyMessage();
                             proxyMessage.setType(ProxyMessage.TYPE_DISCONNECT);
                             proxyMessage.setUri(userId);
-                            cmdChannel.writeAndFlush(proxyMessage);
+                            clientChannel.writeAndFlush(proxyMessage);
                         }
                     };
                     // 获取连接
@@ -132,7 +132,7 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
                     ProxyMessage proxyMessage = new ProxyMessage();
                     proxyMessage.setType(ProxyMessage.TYPE_DISCONNECT);
                     proxyMessage.setUri(userId);
-                    cmdChannel.writeAndFlush(proxyMessage);
+                    clientChannel.writeAndFlush(proxyMessage);
                 }
             }
         });

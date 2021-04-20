@@ -23,6 +23,8 @@ import io.netty.channel.SimpleChannelInboundHandler;
  */
 public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessage> {
 
+    public static Channel tmpUserChannnel;
+
     private static Logger logger = LoggerFactory.getLogger(ServerChannelHandler.class);
 
 
@@ -64,7 +66,9 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
 
     private void handleTransferMessage(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
         //todo 多用户不同地址访问同一端口如何处理
-        Channel userChannel = ctx.channel().attr(Constants.NEXT_CHANNEL).get();
+//        Channel userChannel = ctx.channel().attr(Constants.NEXT_CHANNEL).get();
+        //todo 临时设置为当前值,待返回成功后处理
+        Channel userChannel = tmpUserChannnel;
         if (userChannel != null) {
             ByteBuf buf = ctx.alloc().buffer(proxyMessage.getData().length);
             buf.writeBytes(proxyMessage.getData());
@@ -103,33 +107,35 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
     }
 
     private void handleConnectMessage(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
+        Channel proxyChannel = ctx.channel();
         String uri = proxyMessage.getUri();
         if (uri == null) {
-            ctx.channel().close();
+            proxyChannel.close();
             logger.warn("ConnectMessage:null uri");
             return;
         }
 
         String[] tokens = uri.split("@");
         if (tokens.length != 2) {
-            ctx.channel().close();
+            proxyChannel.close();
             logger.warn("ConnectMessage:error uri");
             return;
         }
 
-        Channel cmdChannel = ProxyChannelManager.getClientChannel(tokens[1]);
-        if (cmdChannel == null) {
-            ctx.channel().close();
+        Channel clientChannel = ProxyChannelManager.getClientChannel(tokens[1]);
+        if (clientChannel == null) {
+            proxyChannel.close();
             logger.warn("ConnectMessage:error cmd channel key {}", tokens[1]);
             return;
         }
 
-        Channel userChannel = ProxyChannelManager.getUserChannel(cmdChannel, tokens[0]);
+        Channel userChannel = ProxyChannelManager.getUserChannel(clientChannel, tokens[0]);
         if (userChannel != null) {
-            ctx.channel().attr(Constants.USER_ID).set(tokens[0]);
-            ctx.channel().attr(Constants.CLIENT_KEY).set(tokens[1]);
-            ctx.channel().attr(Constants.NEXT_CHANNEL).set(userChannel);
-            userChannel.attr(Constants.NEXT_CHANNEL).set(ctx.channel());
+            proxyChannel.attr(Constants.USER_ID).set(tokens[0]);
+            proxyChannel.attr(Constants.CLIENT_KEY).set(tokens[1]);
+            proxyChannel.attr(Constants.NEXT_CHANNEL).set(userChannel);
+            userChannel.attr(Constants.NEXT_CHANNEL).set(proxyChannel);
+            UserChannelHttpHandler.tmpProxyChannel = proxyChannel;
             // 代理客户端与后端服务器连接成功，修改用户连接为可读状态
             userChannel.config().setOption(ChannelOption.AUTO_READ, true);
         }

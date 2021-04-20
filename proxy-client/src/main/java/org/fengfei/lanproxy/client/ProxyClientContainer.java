@@ -45,7 +45,7 @@ public class ProxyClientContainer implements Container, ChannelStatusListener {
 
     private NioEventLoopGroup workerGroup;
 
-    private Bootstrap bootstrap;
+    private Bootstrap clientBootstrap;
 
     private Bootstrap realServerBootstrap;
 
@@ -68,10 +68,10 @@ public class ProxyClientContainer implements Container, ChannelStatusListener {
             }
         });
 
-        bootstrap = new Bootstrap();
-        bootstrap.group(workerGroup);
-        bootstrap.channel(NioSocketChannel.class);
-        bootstrap.handler(new ChannelInitializer<SocketChannel>() {
+        clientBootstrap = new Bootstrap();
+        clientBootstrap.group(workerGroup);
+        clientBootstrap.channel(NioSocketChannel.class);
+        clientBootstrap.handler(new ChannelInitializer<SocketChannel>() {
 
             @Override
             public void initChannel(SocketChannel ch) throws Exception {
@@ -85,7 +85,7 @@ public class ProxyClientContainer implements Container, ChannelStatusListener {
                 ch.pipeline().addLast(new ProxyMessageDecoder(MAX_FRAME_LENGTH, LENGTH_FIELD_OFFSET, LENGTH_FIELD_LENGTH, LENGTH_ADJUSTMENT, INITIAL_BYTES_TO_STRIP));
                 ch.pipeline().addLast(new ProxyMessageEncoder());
                 ch.pipeline().addLast(new IdleCheckHandler(IdleCheckHandler.READ_IDLE_TIME, IdleCheckHandler.WRITE_IDLE_TIME - 10, 0));
-                ch.pipeline().addLast(new ClientChannelHandler(realServerBootstrap, bootstrap, ProxyClientContainer.this));
+                ch.pipeline().addLast(new ClientChannelHandler(realServerBootstrap, clientBootstrap, ProxyClientContainer.this));
             }
         });
     }
@@ -103,7 +103,7 @@ public class ProxyClientContainer implements Container, ChannelStatusListener {
 
     private void connectProxyServer() {
 
-        bootstrap.connect(config.getStringValue("server.host"), config.getIntValue("server.port")).addListener(new ChannelFutureListener() {
+        clientBootstrap.connect(config.getStringValue("server.host"), config.getIntValue("server.port")).addListener(new ChannelFutureListener() {
 
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {
