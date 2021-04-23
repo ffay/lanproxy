@@ -106,8 +106,8 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
         }
     }
 
-    private void handleConnectMessage(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
-        Channel proxyChannel = ctx.channel();
+    private void handleConnectMessage(ChannelHandlerContext proxyCtx, ProxyMessage proxyMessage) {
+        Channel proxyChannel = proxyCtx.channel();
         String uri = proxyMessage.getUri();
         if (uri == null) {
             proxyChannel.close();
