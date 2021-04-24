@@ -30,47 +30,19 @@ public class UserChannelHttpHandler extends SimpleChannelInboundHandler<ByteBuf>
     private static AtomicLong userIdProducer = new AtomicLong(0);
 
 
-    private ProxyChannelManager proxyChannelManager;
 
 
     public UserChannelHttpHandler() {
         super();
     }
 
-    public UserChannelHttpHandler(ProxyChannelManager proxyChannelManager) {
-        this.proxyChannelManager = proxyChannelManager;
-    }
 
     public Map<Channel, Channel> userProxyChannelMap = new ConcurrentHashMap<>();
-
-
-    public static Channel tmpProxyChannel;
-
-    String value = "GET / HTTP/1.1\n" +
-            "Host: 127.0.0.1:7788\n" +
-            "Connection: keep-alive\n" +
-            "Cache-Control: max-age=0\n" +
-            "sec-ch-ua: \" Not A;Brand\";v=\"99\", \"Chromium\";v=\"90\", \"Microsoft Edge\";v=\"90\"\n" +
-            "sec-ch-ua-mobile: ?0\n" +
-            "Upgrade-Insecure-Requests: 1\n" +
-            "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.72 Safari/537.36 Edg/90.0.818.39\n" +
-            "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9\n" +
-            "Sec-Fetch-Site: none\n" +
-            "Sec-Fetch-Mode: navigate\n" +
-            "Sec-Fetch-User: ?1\n" +
-            "Sec-Fetch-Dest: document\n" +
-            "Accept-Encoding: gzip, deflate, br\n" +
-            "Accept-Language: zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6\n" +
-            "Cookie: token=8b6cadfe556a4e35a1b19a085c6b31df\n" +
-            "\n";
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf byteBuf) throws Exception {
 
         Channel userChannel = ctx.channel();
-
-
-        ServerChannelHandler.tmpUserChannnel = userChannel;
 
 
         String userId = newUserId();

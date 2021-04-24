@@ -23,7 +23,6 @@ import io.netty.channel.SimpleChannelInboundHandler;
  */
 public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessage> {
 
-    public static Channel tmpUserChannnel;
 
     private static Logger logger = LoggerFactory.getLogger(ServerChannelHandler.class);
 
@@ -65,10 +64,7 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
     }
 
     private void handleTransferMessage(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
-        //todo 多用户不同地址访问同一端口如何处理
-//        Channel userChannel = ctx.channel().attr(Constants.NEXT_CHANNEL).get();
-        //todo 临时设置为当前值,待返回成功后处理
-        Channel userChannel = tmpUserChannnel;
+        Channel userChannel = ctx.channel().attr(Constants.NEXT_CHANNEL).get();
         if (userChannel != null) {
             ByteBuf buf = ctx.alloc().buffer(proxyMessage.getData().length);
             buf.writeBytes(proxyMessage.getData());
@@ -135,7 +131,6 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
             proxyChannel.attr(Constants.CLIENT_KEY).set(tokens[1]);
             proxyChannel.attr(Constants.NEXT_CHANNEL).set(userChannel);
             userChannel.attr(Constants.NEXT_CHANNEL).set(proxyChannel);
-            UserChannelHttpHandler.tmpProxyChannel = proxyChannel;
             // 代理客户端与后端服务器连接成功，修改用户连接为可读状态
             userChannel.config().setOption(ChannelOption.AUTO_READ, true);
         }

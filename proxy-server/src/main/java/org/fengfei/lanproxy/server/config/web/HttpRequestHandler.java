@@ -7,6 +7,9 @@ import io.netty.handler.codec.http.HttpHeaders.Names;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.stream.ChunkedNioFile;
 import org.fengfei.lanproxy.common.JsonUtil;
+import org.fengfei.lanproxy.server.handlers.ServerChannelHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.RandomAccessFile;
@@ -14,6 +17,8 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
 public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
+
+    private static Logger logger = LoggerFactory.getLogger(HttpRequestHandler.class);
 
     private static final String PAGE_FOLDER = "./proxy-server/webpages";
 
@@ -119,4 +124,16 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
         ctx.writeAndFlush(response);
     }
 
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        logger.info("web http connect successFully");
+        super.channelActive(ctx);
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        logger.info("web http inactived ");
+        super.channelInactive(ctx);
+    }
 }
