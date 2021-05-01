@@ -41,5 +41,5 @@ jobs:
           server: '${{secrets.ALIYUNIP}}' 
           ssh_private_key: ${{ secrets.ALIYUNSSHKEY }} 
           local_path: './distribution/*'  # 对应我们项目build的文件夹路径
-          remote_path: '/~/apps/lanproxy/'
+          remote_path: '/root/apps/lanproxy/'
 
