@@ -39,7 +39,7 @@ jobs:
         with:  
           username: 'root'   #ssh user name
           server: '${{ secrets.ALIYUNIP }}' 
-          ssh_private_key: '${{ secrets.ALIYUNPWD }}' 
+          password: '${{ secrets.ALIYUNPWD }}' 
           local_path: './distribution/*'  # 对应我们项目build的文件夹路径
           remote_path: '/~/apps/lanproxy/'
           
