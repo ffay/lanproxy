@@ -24,7 +24,6 @@ import io.netty.util.AttributeKey;
  * 代理客户端与后端真实服务器连接管理
  *
  * @author fengfei
- *
  */
 public class ClientChannelMannager {
 
@@ -38,20 +37,22 @@ public class ClientChannelMannager {
 
     private static Map<String, Channel> realServerChannels = new ConcurrentHashMap<String, Channel>();
 
+    //真实数据传输channel
     private static ConcurrentLinkedQueue<Channel> proxyChannelPool = new ConcurrentLinkedQueue<Channel>();
 
     private static volatile Channel cmdChannel;
 
     private static Config config = Config.getInstance();
 
-    public static void borrowProxyChanel(Bootstrap bootstrap, final ProxyChannelBorrowListener borrowListener) {
-        Channel channel = proxyChannelPool.poll();
-        if (channel != null) {
-            borrowListener.success(channel);
+    public static void borrowProxyChanel(Bootstrap proxyBootstrap, final ProxyChannelBorrowListener borrowListener) {
+        Channel proxyChannel = proxyChannelPool.poll();
+        if (proxyChannel != null) {
+            borrowListener.success(proxyChannel);
             return;
         }
 
-        bootstrap.connect(config.getStringValue("server.host"), config.getIntValue("server.port")).addListener(new ChannelFutureListener() {
+        //todo 真实数据传输是采用的proxyBootstrap生成的proxyChannel进行数据传输
+        proxyBootstrap.connect(config.getStringValue("server.host"), config.getIntValue("server.port")).addListener(new ChannelFutureListener() {
 
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {
@@ -63,6 +64,10 @@ public class ClientChannelMannager {
                 }
             }
         });
+    }
+
+    public static void borrowProxyChanel2(Channel proxyChannel, final ProxyChannelBorrowListener borrowListener) {
+        borrowListener.success(proxyChannel);
     }
 
     public static void returnProxyChanel(Channel proxyChanel) {

@@ -1,12 +1,16 @@
 package org.fengfei.lanproxy.server;
 
 import java.net.BindException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 
+import io.netty.channel.*;
 import org.fengfei.lanproxy.common.Config;
 import org.fengfei.lanproxy.common.container.Container;
 import org.fengfei.lanproxy.common.container.ContainerHelper;
@@ -23,10 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -53,12 +53,18 @@ public class ProxyServerContainer implements Container, ConfigChangedListener {
 
     private NioEventLoopGroup serverBossGroup;
 
+    private ProxyServerContainer serverContainerSelf;
+
+    private static final Map<String, List<Channel>> clientKeyAndUserPortBindChannelsMap = new ConcurrentHashMap<>();
+    private static final Map<Channel, List<Channel>> clientChannelAndUserPortBindChannelsMap = new ConcurrentHashMap<>();
+
     public ProxyServerContainer() {
 
         serverBossGroup = new NioEventLoopGroup();
         serverWorkerGroup = new NioEventLoopGroup();
-
+        this.serverContainerSelf = this;
         ProxyConfig.getInstance().addConfigChangedListener(this);
+
     }
 
     @Override
@@ -71,7 +77,7 @@ public class ProxyServerContainer implements Container, ConfigChangedListener {
                 ch.pipeline().addLast(new ProxyMessageDecoder(MAX_FRAME_LENGTH, LENGTH_FIELD_OFFSET, LENGTH_FIELD_LENGTH, LENGTH_ADJUSTMENT, INITIAL_BYTES_TO_STRIP));
                 ch.pipeline().addLast(new ProxyMessageEncoder());
                 ch.pipeline().addLast(new IdleCheckHandler(IdleCheckHandler.READ_IDLE_TIME, IdleCheckHandler.WRITE_IDLE_TIME, 0));
-                ch.pipeline().addLast(new ServerChannelHandler());
+                ch.pipeline().addLast(new ServerChannelHandler(serverContainerSelf));
             }
         });
 
@@ -87,9 +93,6 @@ public class ProxyServerContainer implements Container, ConfigChangedListener {
             int port = Config.getInstance().getIntValue("server.ssl.port");
             initializeSSLTCPTransport(host, port, new SslContextCreator().initSSLContext());
         }
-
-        startUserPort();
-
     }
 
     private void initializeSSLTCPTransport(String host, int port, final SSLContext sslContext) {
@@ -133,8 +136,6 @@ public class ProxyServerContainer implements Container, ConfigChangedListener {
             }
         });
 
-        //todo 暂时不开,等待客户端连接时才进行开启
-        //todo unchange时候关闭
         List<Integer> ports = ProxyConfig.getInstance().getUserPorts();
         for (int port : ports) {
             try {
@@ -149,6 +150,61 @@ public class ProxyServerContainer implements Container, ConfigChangedListener {
             }
         }
 
+
+    }
+
+    /**
+     * 开启对应客户端需要的port
+     *
+     * @param ports
+     */
+    public void startClientPorts(String clientKey, List<Integer> ports, Channel clientChannel) {
+        ServerBootstrap bootstrap = new ServerBootstrap();
+        bootstrap.group(serverBossGroup, serverWorkerGroup).channel(NioServerSocketChannel.class).childHandler(new ChannelInitializer<SocketChannel>() {
+
+            @Override
+            public void initChannel(SocketChannel ch) throws Exception {
+                ch.pipeline().addFirst(new BytesMetricsHandler());
+                ch.pipeline().addLast(new UserChannelHandler());
+            }
+        });
+        ArrayList<Channel> channels = new ArrayList<>();
+
+        for (int port : ports) {
+            try {
+                ChannelFuture sync = bootstrap.bind(port).sync();
+                channels.add(sync.channel());
+                sync.get();
+                logger.info("bind user port " + port);
+            } catch (Exception ex) {
+
+                // BindException表示该端口已经绑定过
+                if (!(ex.getCause() instanceof BindException)) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        }
+        clientKeyAndUserPortBindChannelsMap.put(clientKey, channels);
+        clientChannelAndUserPortBindChannelsMap.put(clientChannel, channels);
+    }
+
+    /**
+     * 关闭对应的端口
+     *
+     * @param clientKey
+     */
+    public void closeClientPorts(String clientKey) throws InterruptedException {
+        for (Channel channel : clientKeyAndUserPortBindChannelsMap.get(clientKey)) {
+            logger.info(String.format("正在关闭%s客户端 所需公网端口 %s", clientKey, channel.remoteAddress()));
+            channel.close().sync();
+        }
+    }
+
+    public void closeClientPorts(Channel clientChannel) throws InterruptedException {
+        for (Channel channel : clientChannelAndUserPortBindChannelsMap.get(clientChannel)) {
+            logger.info(String.format("正在关闭%s客户端 所需公网端口 %s", clientChannel.remoteAddress(), channel.localAddress()));
+            channel.close().sync();
+        }
     }
 
     @Override
@@ -174,7 +230,8 @@ public class ProxyServerContainer implements Container, ConfigChangedListener {
 
     public static void main(String[] args) {
         //proxyServer 代理转发  WebConfig web后台处理
-        ContainerHelper.start(Arrays.asList(new ProxyServerContainer(), new WebConfigContainer()));
+        ContainerHelper.start(Arrays.asList(new ProxyServerContainer(), new WebConfigContainer(), new HttpProxyServerContainer()));
     }
+
 
 }
