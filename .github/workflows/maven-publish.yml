@@ -34,20 +34,12 @@ jobs:
       - name: Build with Maven
         run: mvn package
         
-#       - name: deploy file to server
-#         uses: wlixcc/SFTP-Deploy-Action@v1.0 
-#         with:  
-#           username: 'root'   #ssh user name
-#           server: '${{secrets.ALIYUNIP}}' 
-#           ssh_private_key: ${{ secrets.ALIYUNSSHKEY }} 
-#           local_path: './distribution/*'  # 对应我们项目build的文件夹路径
-#           remote_path: '/~/apps/lanproxy/'
-      - name: Simple SFTP
-          # You may pin to the exact commit or the version.
-          # uses: Atyn/simple-sftp-action@a684a17fdd2b79d23101d568d9e8b5070f58e685
-        uses: Atyn/simple-sftp-action@0.0.2
-        with:
-          # URL to the SFTP server. Example: sftp://USERNAME:PASSWORD@example.com/remote-directory
-          url: sftp://root:ZWZlove520@120.76.62.44/~/apps/lanproxy/
-          # The directory that should be uploaded
-          localdir: ./distribution/
+      - name: deploy file to server
+        uses: wlixcc/SFTP-Deploy-Action@v1.0 
+        with:  
+          username: 'root'   #ssh user name
+          server: '${{secrets.ALIYUNIP}}' 
+          ssh_private_key: ${{ secrets.ALIYUNSSHKEY }} 
+          local_path: './distribution/*'  # 对应我们项目build的文件夹路径
+          remote_path: '/~/apps/lanproxy/'
+
