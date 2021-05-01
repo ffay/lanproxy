@@ -10,7 +10,7 @@ on:
 
 jobs:
   deploy_job:
-    runs-on: centos-latest
+    runs-on: ubuntu-latest
   
     steps:
       - name: master
