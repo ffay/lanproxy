@@ -33,4 +33,13 @@ jobs:
           
       - name: Build with Maven
         run: mvn package
+        
+      - name: deploy file to server
+        uses: wlixcc/SFTP-Deploy-Action@v1.0 
+        with:  
+          username: 'root'   #ssh user name
+          server: '${{ secrets.ALIYUNIP }}' #引用之前创建好的secret
+          ssh_private_key: ${{ secrets.ALIYUNSSHKEY }} #引用之前创建好的secret
+          local_path: './distribution/*'  # 对应我们项目build的文件夹路径
+          remote_path: '/~/apps/lanproxy/'
           
