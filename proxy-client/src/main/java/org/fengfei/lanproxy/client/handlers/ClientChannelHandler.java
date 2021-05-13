@@ -19,6 +19,12 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.SimpleChannelInboundHandler;
 
+import java.io.IOException;
+import java.net.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author fengfei
  */
@@ -53,14 +59,35 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
             case ProxyMessage.P_TYPE_TRANSFER:
                 handleTransferMessage(ctx, proxyMessage);
                 break;
+            case ProxyMessage.TYPE_UDP_CONNECT:
+                handleUdpConnect(ctx, proxyMessage);
+                break;
             default:
                 break;
         }
     }
 
+    private void handleUdpConnect(ChannelHandlerContext ctx, ProxyMessage proxyMessage) throws IOException, InterruptedException {
+        String requestAddress = new String(proxyMessage.getData());
+        String[] ipInfo = requestAddress.split(":");
+        String ip = ipInfo[0];
+        int port = Integer.parseInt(ipInfo[1]);
+
+        //发送一个udp包测试是否打洞成功
+        DatagramSocket socket = new DatagramSocket(9909);
+        while (true) {
+            byte[] bytes = ("connected" + System.currentTimeMillis()).getBytes();
+            socket.send(new DatagramPacket(bytes, bytes.length, new InetSocketAddress(ip, port)));
+            byte[] buf = new byte[1024];
+            DatagramPacket receiveP = new DatagramPacket(buf, 1024);
+            socket.receive(receiveP);
+            System.out.println(new String(receiveP.getData()));
+            TimeUnit.SECONDS.sleep(2);
+        }
+    }
 
 
-    private void handleTransferMessage(ChannelHandlerContext proxyCtx , ProxyMessage proxyMessage) {
+    private void handleTransferMessage(ChannelHandlerContext proxyCtx, ProxyMessage proxyMessage) {
         Channel realServerChannel = proxyCtx.channel().attr(Constants.NEXT_CHANNEL).get();
         if (realServerChannel != null) {
             ByteBuf buf = proxyCtx.alloc().buffer(proxyMessage.getData().length);

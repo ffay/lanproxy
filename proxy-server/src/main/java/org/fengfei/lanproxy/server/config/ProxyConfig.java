@@ -81,6 +81,16 @@ public class ProxyConfig implements Serializable {
     private Integer httpServerProxyPort;
 
     /**
+     * udp ServerBind
+     */
+    private String udpServerBind;
+
+    /**
+     * udp ServerPort
+     */
+    private Integer udpServerPort;
+
+    /**
      * 配置服务管理员用户名
      */
     private String configAdminUsername;
@@ -96,6 +106,14 @@ public class ProxyConfig implements Serializable {
 
     public Integer getHttpServerProxyPort() {
         return httpServerProxyPort;
+    }
+
+    public String getUdpServerBind() {
+        return udpServerBind;
+    }
+
+    public Integer getUdpServerPort() {
+        return udpServerPort;
     }
 
     /**
@@ -135,6 +153,14 @@ public class ProxyConfig implements Serializable {
          */
         this.httpServerProxyPort = Config.getInstance().getIntValue("http.proxy.server.port");
         this.httpServerProxyBind = Config.getInstance().getStringValue("http.proxy.server.bind", "0.0.0.0");
+
+
+        /**
+         * UDP Server 绑定主机host 端口
+         */
+        this.udpServerPort = Config.getInstance().getIntValue("http.udp.server.port");
+        this.udpServerBind = Config.getInstance().getStringValue("http.udp.server.bind", "0.0.0.0");
+
 
         // 配置服务器主机和端口配置初始化
         this.configServerPort = Config.getInstance().getIntValue("config.server.port");

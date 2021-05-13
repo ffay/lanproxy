@@ -31,6 +31,11 @@ public class ProxyMessage {
     /** 用户与代理服务器以及代理客户端与真实服务器连接是否可写状态同步 */
     public static final byte C_TYPE_WRITE_CONTROL = 0x06;
 
+    /**
+     * UDP Connect
+     */
+    public static final byte TYPE_UDP_CONNECT=0x07;
+
     /** 消息类型 */
     private byte type;
 

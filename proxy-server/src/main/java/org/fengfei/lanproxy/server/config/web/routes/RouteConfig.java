@@ -170,6 +170,9 @@ public class RouteConfig {
                 return ResponseInfo.build(MetricsCollector.getAndResetAllMetrics());
             }
         });
+
+//        ApiRoute.ad
+
     }
 
 }
