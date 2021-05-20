@@ -30,8 +30,6 @@ public class UserChannelHttpHandler extends SimpleChannelInboundHandler<ByteBuf>
     private static AtomicLong userIdProducer = new AtomicLong(0);
 
 
-
-
     public UserChannelHttpHandler() {
         super();
     }
@@ -63,6 +61,9 @@ public class UserChannelHttpHandler extends SimpleChannelInboundHandler<ByteBuf>
         int i = url.indexOf("/", 1);
         String clientKeyAndTargetHost = url.substring(1, i);
         url = url.substring(i);
+        if (url.endsWith("/")) {
+            url = url.substring(0, url.length() - 1);
+        }
         httpContent = httpMethod + " " + url + httpContent.substring(sSpaceIndex);
         bytes = httpContent.getBytes();
         String[] targetInfos = clientKeyAndTargetHost.split("-");

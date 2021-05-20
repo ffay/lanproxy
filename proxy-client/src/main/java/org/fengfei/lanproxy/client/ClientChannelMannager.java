@@ -66,9 +66,6 @@ public class ClientChannelMannager {
         });
     }
 
-    public static void borrowProxyChanel2(Channel proxyChannel, final ProxyChannelBorrowListener borrowListener) {
-        borrowListener.success(proxyChannel);
-    }
 
     public static void returnProxyChanel(Channel proxyChanel) {
         if (proxyChannelPool.size() > MAX_POOL_SIZE) {

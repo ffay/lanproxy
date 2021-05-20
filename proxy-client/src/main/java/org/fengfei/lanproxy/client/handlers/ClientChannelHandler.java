@@ -38,7 +38,6 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
 
     private ChannelStatusListener channelStatusListener;
 
-    private static Channel arealServerChannel;
 
     public ClientChannelHandler(Bootstrap realServerBootstrap, Bootstrap proxyBootstrap, ChannelStatusListener channelStatusListener) {
         this.realServerBootstrap = realServerBootstrap;
@@ -47,7 +46,7 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, ProxyMessage proxyMessage) throws Exception {
+    protected void channelRead0(final ChannelHandlerContext ctx, ProxyMessage proxyMessage) throws Exception {
         logger.debug("recieved proxy message, type is {}", proxyMessage.getType());
         switch (proxyMessage.getType()) {
             case ProxyMessage.TYPE_CONNECT:
@@ -60,29 +59,41 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
                 handleTransferMessage(ctx, proxyMessage);
                 break;
             case ProxyMessage.TYPE_UDP_CONNECT:
-                handleUdpConnect(ctx, proxyMessage);
+                final ChannelHandlerContext cctx = ctx;
+                final ProxyMessage cproxyMessage = proxyMessage;
+                Thread thread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        handleUdpConnect(cctx, cproxyMessage);
+                    }
+                });
+                thread.start();
                 break;
             default:
                 break;
         }
     }
 
-    private void handleUdpConnect(ChannelHandlerContext ctx, ProxyMessage proxyMessage) throws IOException, InterruptedException {
-        String requestAddress = new String(proxyMessage.getData());
-        String[] ipInfo = requestAddress.split(":");
-        String ip = ipInfo[0];
-        int port = Integer.parseInt(ipInfo[1]);
+    private void handleUdpConnect(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
+        try {
+            String requestAddress = new String(proxyMessage.getData());
+            String[] ipInfo = requestAddress.split(":");
+            String ip = ipInfo[0];
+            int port = Integer.parseInt(ipInfo[1]);
 
-        //发送一个udp包测试是否打洞成功
-        DatagramSocket socket = new DatagramSocket(9909);
-        while (true) {
-            byte[] bytes = ("connected" + System.currentTimeMillis()).getBytes();
-            socket.send(new DatagramPacket(bytes, bytes.length, new InetSocketAddress(ip, port)));
-            byte[] buf = new byte[1024];
-            DatagramPacket receiveP = new DatagramPacket(buf, 1024);
-            socket.receive(receiveP);
-            System.out.println(new String(receiveP.getData()));
-            TimeUnit.SECONDS.sleep(2);
+            //发送一个udp包测试是否打洞成功
+            DatagramSocket socket = new DatagramSocket();
+            while (true) {
+                byte[] bytes = ("connected" + System.currentTimeMillis()).getBytes();
+                socket.send(new DatagramPacket(bytes, bytes.length, new InetSocketAddress(ip, port)));
+                byte[] buf = new byte[1024];
+                DatagramPacket receiveP = new DatagramPacket(buf, 1024);
+                socket.receive(receiveP);
+                System.out.println("端口:" + socket.getPort() + "接收到:" + new String(receiveP.getData()));
+                TimeUnit.SECONDS.sleep(2);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

@@ -61,9 +61,8 @@ public class ProxyClientContainer implements Container, ChannelStatusListener {
         realServerBootstrap.group(workerGroup);
         realServerBootstrap.channel(NioSocketChannel.class);
         realServerBootstrap.handler(new ChannelInitializer<SocketChannel>() {
-
             @Override
-            public void initChannel(SocketChannel ch) throws Exception {
+            public void initChannel(SocketChannel ch) {
                 ch.pipeline().addLast(new RealServerChannelHandler());
             }
         });

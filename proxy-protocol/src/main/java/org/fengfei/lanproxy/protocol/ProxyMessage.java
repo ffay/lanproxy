@@ -34,7 +34,12 @@ public class ProxyMessage {
     /**
      * UDP Connect
      */
-    public static final byte TYPE_UDP_CONNECT=0x07;
+    public static final byte TYPE_UDP_CONNECT=0x09;
+
+    /**
+     * UDP数据传输
+     */
+    public static final byte P_TYPE_TRANSFER_UDP=0X08;
 
     /** 消息类型 */
     private byte type;
