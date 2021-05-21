@@ -62,15 +62,19 @@ class UdpHandler extends SimpleChannelInboundHandler<DatagramPacket> {
         ByteBuf content = msg.content();
         byte[] bytes = new byte[content.readableBytes()];
         content.readBytes(bytes);
-        String clientKey = new String(bytes);
+        String[] targetInfos = new String(bytes).split("-");
+        String clientKey = targetInfos[0];
+        String realServerAddress = targetInfos[1];
+
+
         Channel clientChannel = ProxyChannelManager.getClientChannel(clientKey);
 
         ProxyMessage proxyMessage = new ProxyMessage();
-        proxyMessage.setData((address.getHostAddress() + ":" + port).getBytes());
+        proxyMessage.setData((address.getHostAddress() + ":" + port + "-" + realServerAddress).getBytes());
         proxyMessage.setType(ProxyMessage.TYPE_UDP_CONNECT);
         proxyMessage.setSerialNumber(proxyMessage.getData().length);
-        proxyMessage.setUri("zzz");
-
+        proxyMessage.setUri(clientKey);
+        
         clientChannel.writeAndFlush(proxyMessage);
 
 

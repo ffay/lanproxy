@@ -10,4 +10,6 @@ public interface Constants {
     public static final AttributeKey<String> USER_ID = AttributeKey.newInstance("user_id");
 
     public static final AttributeKey<String> CLIENT_KEY = AttributeKey.newInstance("client_key");
+
+    AttributeKey<String> UDP_USER_CLIENT_IP = AttributeKey.newInstance("udp_user_client_ip");
 }
