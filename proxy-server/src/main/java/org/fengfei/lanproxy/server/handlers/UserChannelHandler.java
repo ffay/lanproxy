@@ -19,7 +19,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
  */
 public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
-    private static AtomicLong userIdProducer = new AtomicLong(0);
+    private static final AtomicLong userIdProducer = new AtomicLong(0);
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
