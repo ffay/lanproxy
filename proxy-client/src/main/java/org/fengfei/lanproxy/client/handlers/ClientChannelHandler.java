@@ -2,6 +2,7 @@ package org.fengfei.lanproxy.client.handlers;
 
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.*;
+import lombok.SneakyThrows;
 import org.fengfei.lanproxy.client.ClientChannelMannager;
 import org.fengfei.lanproxy.client.listener.ChannelStatusListener;
 import org.fengfei.lanproxy.client.listener.ProxyChannelBorrowListener;
@@ -101,8 +102,8 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
             final String userClientIp = userClientIpInfo[0];
             final Integer userClientPort = Integer.parseInt(userClientIpInfo[1]);
 
-            String targetServerIp = targetServerIpInfo[0];
-            Integer targetServerPort = Integer.parseInt(targetServerIpInfo[1]);
+            final String targetServerIp = targetServerIpInfo[0];
+            final Integer targetServerPort = Integer.parseInt(targetServerIpInfo[1]);
 
 
             //阻塞发送打洞包测试是否连接成功
@@ -165,7 +166,11 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
 
                             ByteBuf buf = ByteBufAllocator.DEFAULT.buffer(2048);
                             buf.writeBytes(dataReceivedP.getData());
-                            realServerChannel.writeAndFlush(buf);
+                            Channel channel = realServerChannel;
+                            if (!realServerChannel.isActive()) {
+                                channel = doConnectRealServer(targetServerIp, targetServerPort, ipInfos[0]);
+                            }
+                            channel.writeAndFlush(buf);
                         } catch (SocketTimeoutException timeoutException) {
                             logger.info("user client disConnected: " + receiveP.getAddress());
                             realServerChannel.close();
@@ -187,6 +192,7 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
     }
 
 
+    @SneakyThrows
     private Channel doConnectRealServer(final String targetServerIp, final Integer targetServerPort, final String userClientAddress) {
         ChannelFuture channelFuture = udpRealServerBootStrap.connect(targetServerIp, targetServerPort).addListener(new ChannelFutureListener() {
             @Override
@@ -197,6 +203,7 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
                 }
             }
         });
+        channelFuture.get();
         return channelFuture.channel();
     }
 

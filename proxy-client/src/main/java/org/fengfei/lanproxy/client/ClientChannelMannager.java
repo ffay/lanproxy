@@ -51,7 +51,7 @@ public class ClientChannelMannager {
             return;
         }
 
-        //todo 真实数据传输是采用的proxyBootstrap生成的proxyChannel进行数据传输
+        // 真实数据传输是采用的proxyBootstrap生成的proxyChannel进行数据传输
         proxyBootstrap.connect(config.getStringValue("server.host"), config.getIntValue("server.port")).addListener(new ChannelFutureListener() {
 
             @Override

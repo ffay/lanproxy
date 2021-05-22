@@ -20,9 +20,9 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
 
     private static Logger logger = LoggerFactory.getLogger(HttpRequestHandler.class);
 
-    //    private static final String PAGE_FOLDER = "./proxy-server/webpages";
-    private static final String PAGE_FOLDER = System.getProperty("app.home", System.getProperty("user.dir"))
-            + "/webpages";
+    private static final String PAGE_FOLDER = "./proxy-server/webpages";
+    //    private static final String PAGE_FOLDER = System.getProperty("app.home", System.getProperty("user.dir"))
+//            + "/webpages";
     private static final String SERVER_VS = "LPS-0.1";
 
     @Override
