@@ -2,7 +2,7 @@
 
 https://nat.nioee.com
 
-## 技术交流QQ群 851869252
+## 技术交流QQ群 678776401
 
 lanproxy
 --------
