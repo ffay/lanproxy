@@ -51,7 +51,7 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
     }
 
     private void outputContent(ChannelHandlerContext ctx, FullHttpRequest request, int code, String content,
-            String mimeType) {
+                               String mimeType) {
 
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(code),
                 Unpooled.wrappedBuffer(content.getBytes(Charset.forName("UTF-8"))));
@@ -74,7 +74,8 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
      */
     private void outputPages(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
         HttpResponseStatus status = HttpResponseStatus.OK;
-        URI uri = new URI(request.getUri());
+        String url = request.getUri().replace(".", "");
+        URI uri = new URI(url);
         String uriPath = uri.getPath();
         uriPath = uriPath.equals("/") ? "/index.html" : uriPath;
         String path = PAGE_FOLDER + uriPath;
