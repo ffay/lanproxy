@@ -4,6 +4,12 @@ https://nat.nioee.com
 
 ## 技术交流QQ群 678776401
 
+## 个人升级版
+
+体验地址 https://lanp.nioee.com (测试用户名密码 test/123456)
+
+![plan](plan.png)
+
 lanproxy
 --------
 
