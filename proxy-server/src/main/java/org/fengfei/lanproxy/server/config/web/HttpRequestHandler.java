@@ -74,9 +74,13 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
      */
     private void outputPages(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
         HttpResponseStatus status = HttpResponseStatus.OK;
-        String url = request.getUri().replace(".", "");
-        URI uri = new URI(url);
+        URI uri = new URI(request.getUri());
         String uriPath = uri.getPath();
+        if (uriPath.contains("../")) {
+            status = HttpResponseStatus.FORBIDDEN;
+            outputContent(ctx, request, status.code(), status.toString(), "text/html");
+            return;
+        }
         uriPath = uriPath.equals("/") ? "/index.html" : uriPath;
         String path = PAGE_FOLDER + uriPath;
         File rfile = new File(path);
