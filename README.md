@@ -1,8 +1,9 @@
+## 技术交流QQ群 678776401
+
 ## Lanproxy运营版上线，欢迎体验
 
 https://nat.nioee.com
 
-## 技术交流QQ群 678776401
 
 ## Lanproxy个人升级版
 
@@ -12,7 +13,6 @@ https://nat.nioee.com
 ![panel](panel.png)
 
 ## Lanproxy开源免费版
---------
 
 [README](README_en.md) | [中文文档](README.md)
 
