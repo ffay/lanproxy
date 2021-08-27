@@ -9,6 +9,7 @@ https://nat.nioee.com
 体验地址 https://lanp.nioee.com (测试用户名密码 test/123456)
 
 ![plan](plan.png)
+![panel](panel.png)
 
 lanproxy
 --------
