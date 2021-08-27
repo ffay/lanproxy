@@ -1,17 +1,17 @@
-## lanproxy多用户版本（运营版）上线，欢迎体验
+## Lanproxy运营版上线，欢迎体验
 
 https://nat.nioee.com
 
 ## 技术交流QQ群 678776401
 
-## 个人升级版
+## Lanproxy个人升级版
 
 体验地址 https://lanp.nioee.com (测试用户名密码 test/123456)
 
 ![plan](plan.png)
 ![panel](panel.png)
 
-lanproxy
+## Lanproxy开源免费版
 --------
 
 [README](README_en.md) | [中文文档](README.md)
