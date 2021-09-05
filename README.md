@@ -7,9 +7,18 @@ https://nat.nioee.com
 
 ## Lanproxy个人升级版
 
+核心功能：
+
+- 穿透基础功能，同开源版本，高性能，可同时支持数万穿透连接
+- 全新界面UI，操作简单，部署简单（java+mysql）
+- 自定义域名绑定，为你穿透端口绑定域名，不再是IP+端口裸奔访问
+- 自定义域名ssl证书，也可为你绑定的域名开启ssl证书自动申请与续期，无需人工干涉
+- 自定义客户端离线展示页面，可以利用该功能展示一些html单页
+- 支持http/https/socks5多种模式使用客户端网络代理上网，家里轻松访问公司网络
+- 多用户支持，同时满足多人日常穿透需求
+
 体验地址 https://lanp.nioee.com (测试用户名密码 test/123456)
 
-![plan](https://file.nioee.com/thumbnail/3c8d517c6dac473c8ddd/1280/plan.png)
 ![panel](panel.png)
 
 ## Lanproxy开源免费版
