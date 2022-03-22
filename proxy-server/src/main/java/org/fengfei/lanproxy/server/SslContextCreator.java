@@ -76,8 +76,13 @@ public class SslContextCreator {
                 // use keystore as truststore, as server needs to trust
                 // certificates signed by the
                 // server certificates
+                final String caPath = Config.getInstance().getStringValue("server.ssl.TrustkeyStorePath");
+                InputStream caInputStream = jksDatastore(caPath);
+                final KeyStore caks = KeyStore.getInstance("JKS");
+                caks.load(caInputStream, keyStorePassword.toCharArray());
+
                 TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-                tmf.init(ks);
+                tmf.init(caks);
                 trustManagers = tmf.getTrustManagers();
             }
 

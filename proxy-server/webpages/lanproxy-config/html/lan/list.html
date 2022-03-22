@@ -26,6 +26,11 @@
             <td>
               <a data-index="<%:=i%>" class="layui-btn layui-btn-mini mapping-edit"></a>
               <a data-index="<%:=i%>" class="layui-btn layui-btn-danger layui-btn-mini mapping-delete"></a>
+              <% if(!data[i].enable){ %>
+              <a data-index="<%:=i%>" class="layui-btn layui-btn-mini mapping-enable"></a>
+              <% } else { %>
+              <a data-index="<%:=i%>" class="layui-btn layui-btn-danger layui-btn-mini mapping-disable"></a>
+              <% }%>
             </td>
         </tr>
     <%}%>
@@ -45,6 +50,8 @@
 	$(".i18n-lan-options").html($.i18n.prop('public.options'));
 	$(".mapping-edit").html($.i18n.prop('public.edit'));
 	$(".mapping-delete").html($.i18n.prop('public.delete'));
+    $(".mapping-enable").html($.i18n.prop('public.enable'));
+    $(".mapping-disable").html($.i18n.prop('public.disable'));
 	$(".mapping-config").click(function() {
 		window.clientIndex = $(this).attr("data-index");
 		load_page("html/lan/list.html");
@@ -70,6 +77,31 @@
 			})
 		});
 	});
+
+    $(".mapping-enable").click(function() {
+        var mappingIndex = $(this).attr("data-index");
+        clientList[clientIndex].proxyMappings[mappingIndex].enable = true;
+        api_invoke("/config/update", clientList, function(data) {
+            if (data.code != 20000) {
+                layer.alert(data.message);
+            } else {
+                load_page("html/lan/list.html");
+            }
+        })
+    });
+
+    $(".mapping-disable").click(function() {
+        var mappingIndex = $(this).attr("data-index");
+        clientList[clientIndex].proxyMappings[mappingIndex].enable = false;
+        api_invoke("/config/update", clientList, function(data) {
+            if (data.code != 20000) {
+                layer.alert(data.message);
+            } else {
+                load_page("html/lan/list.html");
+            }
+        })
+    });
+
 	$(".back").click(function() {
 		load_page("html/client/list.html");
 	});

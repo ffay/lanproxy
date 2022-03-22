@@ -6,12 +6,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
+import java.security.*;
 import java.security.cert.CertificateException;
 
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
@@ -31,8 +29,9 @@ public class SslContextCreator {
     public SSLContext initSSLContext() {
         logger.info("Checking SSL configuration properties...");
         final String jksPath = Config.getInstance().getStringValue("ssl.jksPath");
-        logger.info("Initializing SSL context. KeystorePath = {}.", jksPath);
-        if (jksPath == null || jksPath.isEmpty()) {
+        final String caPath = Config.getInstance().getStringValue("ssl.TrustkeyStorePath");
+        logger.info("Initializing SSL context. KeystorePath = {}.{}", jksPath,caPath);
+        if (jksPath == null || jksPath.isEmpty() ||caPath == null || caPath.isEmpty()) {
             // key_store_password or key_manager_password are empty
             logger.warn("The keystore path is null or empty. The SSL context won't be initialized.");
             return null;
@@ -48,22 +47,29 @@ public class SslContextCreator {
         try {
             logger.info("Loading keystore. KeystorePath = {}.", jksPath);
             InputStream jksInputStream = jksDatastore(jksPath);
+            InputStream caInputStream = jksDatastore(caPath);
             SSLContext clientSSLContext = SSLContext.getInstance("TLS");
-            final KeyStore ks = KeyStore.getInstance("JKS");
+            final KeyStore ks = KeyStore.getInstance("PKCS12");
             ks.load(jksInputStream, keyStorePassword.toCharArray());
 
+            final KeyStore caks = KeyStore.getInstance("JKS");
+            caks.load(caInputStream, keyStorePassword.toCharArray());
+
+            final KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            kmf.init(ks, keyStorePassword.toCharArray());
+
             TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            tmf.init(ks);
+            tmf.init(caks);
             TrustManager[] trustManagers = tmf.getTrustManagers();
 
             // init sslContext
             logger.info("Initializing SSL context...");
-            clientSSLContext.init(null, trustManagers, null);
+            clientSSLContext.init(kmf.getKeyManagers(), trustManagers, null);
             logger.info("The SSL context has been initialized successfully.");
 
             return clientSSLContext;
-        } catch (NoSuchAlgorithmException | CertificateException | KeyStoreException | KeyManagementException
-                | IOException ex) {
+        } catch (NoSuchAlgorithmException | UnrecoverableKeyException | CertificateException | KeyStoreException
+                | KeyManagementException | IOException ex) {
             logger.error("Unable to initialize SSL context. Cause = {}, errorMessage = {}.", ex.getCause(),
                     ex.getMessage());
             return null;
