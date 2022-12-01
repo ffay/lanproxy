@@ -147,3 +147,23 @@ nohup ./client_linux_amd64 -s SERVER_IP -p SERVER_SSL_PORT -k CLIENT_KEY -ssl tr
 
 - 在家里使用公司的网络，可以和 https://github.com/ffay/http-proxy-server 这个http代理项目配合使用（个人升级版已经内置代理上网功能，详细资料 https://file.nioee.com/f/76ebbce67c864e4dbe7e/ ）
 - 对于正常网站，80和443端口只有一个，可以购买个人升级版本解决端口复用问题
+
+## 生成 JSK 文件
+```shell
+keytool -genkey -keyalg RSA -keysize 2048 -validity 365 -dname "CN=test, OU=test,O=test, L=shanghai, ST=shanghai, C=CN" -alias csii_key -keypass 888888 -keystore sdm-202212011626.jks -storepass 123456
+```
+### ⚠️注️：
+> 1. 当-keypass 和 -storepass 设为不同时，keytool会给出以下警告：
+> ```shell
+> 警告: PKCS12 密钥库不支持其他存储和密钥口令。正在忽略用户指定的-keypass值。
+> ```
+> 这时在configuration.properties文件中keyStore和keyManager密码必须为一直是kesStore的密码。
+> ```properties
+> server.ssl.keyStorePassword=123456(keystore密码）
+> server.ssl.keyManagerPassword=123456（keystore密码）
+> ```
+> 2.提高安全性： keysize必须为大于等于2048
+> ```shell
+> 生成的证书 使用的 1024 位 RSA 密钥 被视为存在安全风险。此密钥大小将在未来的更新中被禁用。
+>```
+> 详情请见 [“陷阱”素数（‘trapdoored’ primes）的出现，使用1024位密钥加密算法已不再安全](https://searchsecurity.techtarget.com.cn/11-24358/)
