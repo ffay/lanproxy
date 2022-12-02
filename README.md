@@ -167,3 +167,7 @@ keytool -genkey -keyalg RSA -keysize 2048 -validity 365 -dname "CN=test, OU=test
 > 生成的证书 使用的 1024 位 RSA 密钥 被视为存在安全风险。此密钥大小将在未来的更新中被禁用。
 >```
 > 详情请见 [“陷阱”素数（‘trapdoored’ primes）的出现，使用1024位密钥加密算法已不再安全](https://searchsecurity.techtarget.com.cn/11-24358/)
+
+### 进阶版
+#### 映射配置
+![webconfig](截屏2022-12-02%2015.04.34.png)
