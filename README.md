@@ -4,7 +4,6 @@
 
 https://nat.nioee.com
 
-
 ## Lanproxy个人升级版
 
 核心功能：
@@ -19,7 +18,7 @@ https://nat.nioee.com
 
 体验地址 https://lanp.nioee.com (测试用户名密码 test/123456)
 
-![panel](panel.png)
+![panel](assets/panel.png)
 
 ## Lanproxy开源免费版
 
@@ -37,8 +36,8 @@ lanproxy是一个将局域网个人电脑、服务器代理到公网的内网穿
 
 #### 获取发布包
 
--	拉取源码，运行 mvn package，打包后的资源放在distribution目录中，包括client和server
--	或直接下载发布包  https://github.com/ffay/lanproxy/releases
+- 拉取源码，运行 mvn package，打包后的资源放在distribution目录中，包括client和server
+- 或直接下载发布包  https://github.com/ffay/lanproxy/releases
 
 #### 配置
 
@@ -48,10 +47,8 @@ server的配置文件放置在conf目录中，配置 config.properties
 
 ```properties
 server.bind=0.0.0.0
-
 #与代理客户端通信端口
 server.port=4900
-
 #ssl相关配置
 server.ssl.enable=true
 server.ssl.bind=0.0.0.0
@@ -59,10 +56,8 @@ server.ssl.port=4993
 server.ssl.jksPath=test.jks
 server.ssl.keyStorePassword=123456
 server.ssl.keyManagerPassword=123456
-
 #这个配置可以忽略
 server.ssl.needsClientAuth=false
-
 #WEB在线配置管理相关信息
 config.server.bind=0.0.0.0
 config.server.port=8090
@@ -72,11 +67,11 @@ config.admin.password=admin
 
 代理配置，打开地址 http://ip:8090 ，使用上面配置中配置的用户名密码登录，进入如下代理配置界面
 
-![webconfig](readme_zh_client_list.png)
+![webconfig](assets/readme_zh_client_list.png)
 
-![webconfig](readme_zh_proxy_list.png)
+![webconfig](assets/readme_zh_proxy_list.png)
 
-![webconfig](readme_zh_stat_list.png)
+![webconfig](assets/readme_zh_stat_list.png)
 
 > 一个server可以支持多个客户端连接
 > 配置数据存放在 ~/.lanproxy/config.json 文件中
@@ -92,10 +87,8 @@ client.key=
 ssl.enable=true
 ssl.jksPath=test.jks
 ssl.keyStorePassword=123456
-
 #这里填写实际的proxy-server地址；没有服务器默认即可，自己有服务器的更换为自己的proxy-server（IP）地址
 server.host=lp.thingsglobal.org
-
 #proxy-server ssl默认端口4993，默认普通端口4900
 #ssl.enable=true时这里填写ssl端口，ssl.enable=false时这里填写普通端口
 server.port=4993
@@ -145,14 +138,18 @@ nohup ./client_linux_amd64 -s SERVER_IP -p SERVER_SSL_PORT -k CLIENT_KEY -ssl tr
 
 #### 其他
 
-- 在家里使用公司的网络，可以和 https://github.com/ffay/http-proxy-server 这个http代理项目配合使用（个人升级版已经内置代理上网功能，详细资料 https://file.nioee.com/f/76ebbce67c864e4dbe7e/ ）
+- 在家里使用公司的网络，可以和 https://github.com/ffay/http-proxy-server
+  这个http代理项目配合使用（个人升级版已经内置代理上网功能，详细资料 https://file.nioee.com/f/76ebbce67c864e4dbe7e/ ）
 - 对于正常网站，80和443端口只有一个，可以购买个人升级版本解决端口复用问题
 
 ## 生成 JSK 文件
+
 ```shell
 keytool -genkey -keyalg RSA -keysize 2048 -validity 365 -dname "CN=test, OU=test,O=test, L=shanghai, ST=shanghai, C=CN" -alias csii_key -keypass 888888 -keystore sdm-202212011626.jks -storepass 123456
 ```
+
 ### ⚠️注️：
+
 > 1. 当-keypass 和 -storepass 设为不同时，keytool会给出以下警告：
 > ```shell
 > 警告: PKCS12 密钥库不支持其他存储和密钥口令。正在忽略用户指定的-keypass值。
@@ -169,5 +166,23 @@ keytool -genkey -keyalg RSA -keysize 2048 -validity 365 -dname "CN=test, OU=test
 > 详情请见 [“陷阱”素数（‘trapdoored’ primes）的出现，使用1024位密钥加密算法已不再安全](https://searchsecurity.techtarget.com.cn/11-24358/)
 
 ### 进阶版
+
 #### 映射配置
-![webconfig](截屏2022-12-02%2015.04.34.png)
+
+![webconfig](assets/进阶版配置表单截图.png)
+
+### 开发&调试
+
+如果想在IDEA中运行并调试，务必要配置Application Configuration
+![img.png](assets/application-configuration-shortcut.png)
+JVM Options:
+```shell
+-Dapp.home=<项目的绝对路径>/proxy-server
+-Djava.awt.headless=true
+-Djava.net.preferIPv4Stack=true
+-Djdk.tls.rejectClientInitiatedRenegotiation=true
+-Xdebug
+-Xnoagent
+-Djava.compiler=NONE
+-Xrunjdwp:transport=dt_socket,address=12000,server=y,suspend=n
+```
