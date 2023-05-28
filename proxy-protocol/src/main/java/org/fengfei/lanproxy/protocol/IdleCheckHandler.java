@@ -2,7 +2,6 @@ package org.fengfei.lanproxy.protocol;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
@@ -11,7 +10,6 @@ import io.netty.handler.timeout.IdleStateHandler;
  * check idle chanel.
  *
  * @author fengfei
- *
  */
 public class IdleCheckHandler extends IdleStateHandler {
 
@@ -29,7 +27,6 @@ public class IdleCheckHandler extends IdleStateHandler {
 
     @Override
     protected void channelIdle(ChannelHandlerContext ctx, IdleStateEvent evt) throws Exception {
-
         if (IdleStateEvent.FIRST_WRITER_IDLE_STATE_EVENT == evt) {
             logger.debug("channel write timeout {}", ctx.channel());
             ProxyMessage proxyMessage = new ProxyMessage();

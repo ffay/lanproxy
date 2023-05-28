@@ -5,13 +5,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-
 import org.fengfei.lanproxy.client.listener.ProxyChannelBorrowListener;
 import org.fengfei.lanproxy.common.Config;
 import org.fengfei.lanproxy.protocol.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
@@ -24,7 +22,6 @@ import io.netty.util.AttributeKey;
  * 代理客户端与后端真实服务器连接管理
  *
  * @author fengfei
- *
  */
 public class ClientChannelMannager {
 
@@ -50,7 +47,6 @@ public class ClientChannelMannager {
             borrowListener.success(channel);
             return;
         }
-
         bootstrap.connect(config.getStringValue("server.host"), config.getIntValue("server.port")).addListener(new ChannelFutureListener() {
 
             @Override
@@ -114,7 +110,6 @@ public class ClientChannelMannager {
 
     public static void clearRealServerChannels() {
         logger.warn("channel closed, clear real server channels");
-
         Iterator<Entry<String, Channel>> ite = realServerChannels.entrySet().iterator();
         while (ite.hasNext()) {
             Channel realServerChannel = ite.next().getValue();
@@ -122,7 +117,6 @@ public class ClientChannelMannager {
                 realServerChannel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
             }
         }
-
         realServerChannels.clear();
     }
 }

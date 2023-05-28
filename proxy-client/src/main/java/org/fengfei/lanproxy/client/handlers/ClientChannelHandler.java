@@ -8,7 +8,6 @@ import org.fengfei.lanproxy.protocol.Constants;
 import org.fengfei.lanproxy.protocol.ProxyMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -20,9 +19,7 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.SimpleChannelInboundHandler;
 
 /**
- *
  * @author fengfei
- *
  */
 public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessage> {
 
@@ -43,7 +40,7 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ProxyMessage proxyMessage) throws Exception {
         logger.debug("recieved proxy message, type is {}", proxyMessage.getType());
-        switch (proxyMessage.getType()) {
+        switch(proxyMessage.getType()) {
             case ProxyMessage.TYPE_CONNECT:
                 handleConnectMessage(ctx, proxyMessage);
                 break;
@@ -88,14 +85,11 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
 
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {
-
                 // 连接后端服务器成功
                 if (future.isSuccess()) {
                     final Channel realServerChannel = future.channel();
                     logger.debug("connect realserver success, {}", realServerChannel);
-
                     realServerChannel.config().setOption(ChannelOption.AUTO_READ, false);
-
                     // 获取连接
                     ClientChannelMannager.borrowProxyChanel(proxyBootstrap, new ProxyChannelBorrowListener() {
 
@@ -104,13 +98,11 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
                             // 连接绑定
                             channel.attr(Constants.NEXT_CHANNEL).set(realServerChannel);
                             realServerChannel.attr(Constants.NEXT_CHANNEL).set(channel);
-
                             // 远程绑定
                             ProxyMessage proxyMessage = new ProxyMessage();
                             proxyMessage.setType(ProxyMessage.TYPE_CONNECT);
                             proxyMessage.setUri(userId + "@" + Config.getInstance().getStringValue("client.key"));
                             channel.writeAndFlush(proxyMessage);
-
                             realServerChannel.config().setOption(ChannelOption.AUTO_READ, true);
                             ClientChannelMannager.addRealServerChannel(userId, realServerChannel);
                             ClientChannelMannager.setRealServerChannelUserId(realServerChannel, userId);
@@ -124,7 +116,6 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
                             cmdChannel.writeAndFlush(proxyMessage);
                         }
                     });
-
                 } else {
                     ProxyMessage proxyMessage = new ProxyMessage();
                     proxyMessage.setType(ProxyMessage.TYPE_DISCONNECT);
@@ -141,13 +132,11 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
         if (realServerChannel != null) {
             realServerChannel.config().setOption(ChannelOption.AUTO_READ, ctx.channel().isWritable());
         }
-
         super.channelWritabilityChanged(ctx);
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-
         // 控制连接
         if (ClientChannelMannager.getCmdChannel() == ctx.channel()) {
             ClientChannelMannager.setCmdChannel(null);
@@ -160,7 +149,6 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
                 realServerChannel.close();
             }
         }
-
         ClientChannelMannager.removeProxyChanel(ctx.channel());
         super.channelInactive(ctx);
     }
@@ -170,5 +158,4 @@ public class ClientChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
         logger.error("exception caught", cause);
         super.exceptionCaught(ctx, cause);
     }
-
 }

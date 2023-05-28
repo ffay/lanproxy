@@ -1,10 +1,8 @@
 package org.fengfei.lanproxy.client;
 
 import java.util.Arrays;
-
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
-
 import org.fengfei.lanproxy.client.handlers.ClientChannelHandler;
 import org.fengfei.lanproxy.client.handlers.RealServerChannelHandler;
 import org.fengfei.lanproxy.client.listener.ChannelStatusListener;
@@ -17,7 +15,6 @@ import org.fengfei.lanproxy.protocol.ProxyMessageDecoder;
 import org.fengfei.lanproxy.protocol.ProxyMessageEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -67,7 +64,6 @@ public class ProxyClientContainer implements Container, ChannelStatusListener {
                 ch.pipeline().addLast(new RealServerChannelHandler());
             }
         });
-
         bootstrap = new Bootstrap();
         bootstrap.group(workerGroup);
         bootstrap.channel(NioSocketChannel.class);
@@ -79,7 +75,6 @@ public class ProxyClientContainer implements Container, ChannelStatusListener {
                     if (sslContext == null) {
                         sslContext = SslContextCreator.createSSLContext();
                     }
-
                     ch.pipeline().addLast(createSslHandler(sslContext));
                 }
                 ch.pipeline().addLast(new ProxyMessageDecoder(MAX_FRAME_LENGTH, LENGTH_FIELD_OFFSET, LENGTH_FIELD_LENGTH, LENGTH_ADJUSTMENT, INITIAL_BYTES_TO_STRIP));
@@ -102,13 +97,11 @@ public class ProxyClientContainer implements Container, ChannelStatusListener {
     }
 
     private void connectProxyServer() {
-
         bootstrap.connect(config.getStringValue("server.host"), config.getIntValue("server.port")).addListener(new ChannelFutureListener() {
 
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {
                 if (future.isSuccess()) {
-
                     // 连接成功，向服务器发送客户端认证信息（clientKey）
                     ClientChannelMannager.setCmdChannel(future.channel());
                     ProxyMessage proxyMessage = new ProxyMessage();
@@ -119,7 +112,6 @@ public class ProxyClientContainer implements Container, ChannelStatusListener {
                     logger.info("connect proxy server success, {}", future.channel());
                 } else {
                     logger.warn("connect proxy server failed", future.cause());
-
                     // 连接失败，发起重连
                     reconnectWait();
                     connectProxyServer();
@@ -144,7 +136,6 @@ public class ProxyClientContainer implements Container, ChannelStatusListener {
             if (sleepTimeMill > 60000) {
                 sleepTimeMill = 1000;
             }
-
             synchronized (this) {
                 sleepTimeMill = sleepTimeMill * 2;
                 wait(sleepTimeMill);
@@ -154,8 +145,6 @@ public class ProxyClientContainer implements Container, ChannelStatusListener {
     }
 
     public static void main(String[] args) {
-
         ContainerHelper.start(Arrays.asList(new Container[] { new ProxyClientContainer() }));
     }
-
 }

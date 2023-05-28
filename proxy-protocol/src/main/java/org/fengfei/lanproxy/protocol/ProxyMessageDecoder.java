@@ -21,8 +21,7 @@ public class ProxyMessageDecoder extends LengthFieldBasedFrameDecoder {
      * @param lengthAdjustment
      * @param initialBytesToStrip
      */
-    public ProxyMessageDecoder(int maxFrameLength, int lengthFieldOffset, int lengthFieldLength, int lengthAdjustment,
-            int initialBytesToStrip) {
+    public ProxyMessageDecoder(int maxFrameLength, int lengthFieldOffset, int lengthFieldLength, int lengthAdjustment, int initialBytesToStrip) {
         super(maxFrameLength, lengthFieldOffset, lengthFieldLength, lengthAdjustment, initialBytesToStrip);
     }
 
@@ -34,8 +33,7 @@ public class ProxyMessageDecoder extends LengthFieldBasedFrameDecoder {
      * @param initialBytesToStrip
      * @param failFast
      */
-    public ProxyMessageDecoder(int maxFrameLength, int lengthFieldOffset, int lengthFieldLength, int lengthAdjustment,
-            int initialBytesToStrip, boolean failFast) {
+    public ProxyMessageDecoder(int maxFrameLength, int lengthFieldOffset, int lengthFieldLength, int lengthAdjustment, int initialBytesToStrip, boolean failFast) {
         super(maxFrameLength, lengthFieldOffset, lengthFieldLength, lengthAdjustment, initialBytesToStrip, failFast);
     }
 
@@ -45,11 +43,9 @@ public class ProxyMessageDecoder extends LengthFieldBasedFrameDecoder {
         if (in == null) {
             return null;
         }
-
         if (in.readableBytes() < HEADER_SIZE) {
             return null;
         }
-
         int frameLength = in.readInt();
         if (in.readableBytes() < frameLength) {
             return null;
@@ -57,22 +53,16 @@ public class ProxyMessageDecoder extends LengthFieldBasedFrameDecoder {
         ProxyMessage proxyMessage = new ProxyMessage();
         byte type = in.readByte();
         long sn = in.readLong();
-
         proxyMessage.setSerialNumber(sn);
-
         proxyMessage.setType(type);
-
         byte uriLength = in.readByte();
         byte[] uriBytes = new byte[uriLength];
         in.readBytes(uriBytes);
         proxyMessage.setUri(new String(uriBytes));
-
         byte[] data = new byte[frameLength - TYPE_SIZE - SERIAL_NUMBER_SIZE - URI_LENGTH_SIZE - uriLength];
         in.readBytes(data);
         proxyMessage.setData(data);
-
         in.release();
-
         return proxyMessage;
     }
 }

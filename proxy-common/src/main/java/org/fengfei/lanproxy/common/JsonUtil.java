@@ -7,7 +7,6 @@ import com.google.gson.reflect.TypeToken;
  * JSON与POJO转换工具类.
  *
  * @author fengfei
- *
  */
 public class JsonUtil {
 
@@ -22,13 +21,10 @@ public class JsonUtil {
     }
 
     /**
-     *
      * java对象转为json对象
-     *
      */
     public static String object2json(Object obj) {
         Gson gson = new Gson();
         return gson.toJson(obj);
     }
-
 }

@@ -20,24 +20,19 @@ public class ProxyMessageEncoder extends MessageToByteEncoder<ProxyMessage> {
             uriBytes = msg.getUri().getBytes();
             bodyLength += uriBytes.length;
         }
-
         if (msg.getData() != null) {
             bodyLength += msg.getData().length;
         }
-
         // write the total packet length but without length field's length.
         out.writeInt(bodyLength);
-
         out.writeByte(msg.getType());
         out.writeLong(msg.getSerialNumber());
-
         if (uriBytes != null) {
             out.writeByte((byte) uriBytes.length);
             out.writeBytes(uriBytes);
         } else {
             out.writeByte((byte) 0x00);
         }
-
         if (msg.getData() != null) {
             out.writeBytes(msg.getData());
         }

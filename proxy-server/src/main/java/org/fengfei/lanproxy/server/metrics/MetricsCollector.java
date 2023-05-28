@@ -40,7 +40,6 @@ public class MetricsCollector {
                 }
             }
         }
-
         return collector;
     }
 
@@ -50,7 +49,6 @@ public class MetricsCollector {
         while (ite.hasNext()) {
             allMetrics.add(ite.next().getValue().getAndResetMetrics());
         }
-
         return allMetrics;
     }
 
@@ -60,7 +58,6 @@ public class MetricsCollector {
         while (ite.hasNext()) {
             allMetrics.add(ite.next().getValue().getMetrics());
         }
-
         return allMetrics;
     }
 
@@ -73,7 +70,6 @@ public class MetricsCollector {
         metrics.setTimestamp(System.currentTimeMillis());
         metrics.setReadMsgs(readMsgs.getAndSet(0));
         metrics.setWroteMsgs(wroteMsgs.getAndSet(0));
-
         return metrics;
     }
 
@@ -86,7 +82,6 @@ public class MetricsCollector {
         metrics.setTimestamp(System.currentTimeMillis());
         metrics.setReadMsgs(readMsgs.get());
         metrics.setWroteMsgs(wroteMsgs.get());
-
         return metrics;
     }
 
@@ -117,5 +112,4 @@ public class MetricsCollector {
     public void setPort(Integer port) {
         this.port = port;
     }
-
 }
