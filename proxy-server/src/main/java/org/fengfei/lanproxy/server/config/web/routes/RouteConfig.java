@@ -48,10 +48,8 @@ public class RouteConfig {
                     String[] cookies = cookieHeader.split(";");
                     for (String cookie : cookies) {
                         String[] cookieArr = cookie.split("=");
-                        if (AUTH_COOKIE_KEY.equals(cookieArr[0].trim())) {
-                            if (cookieArr.length == 2 && cookieArr[1].equals(token)) {
-                                authenticated = true;
-                            }
+                        if (AUTH_COOKIE_KEY.equals(cookieArr[0].trim()) && cookieArr.length == 2 && cookieArr[1].equals(token)) {
+                            authenticated = true;
                         }
                     }
                 }
