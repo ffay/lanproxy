@@ -7,5 +7,4 @@ public class ServerMainTest {
     public static void main(String[] args) {
         ProxyServerContainer.main(args);
     }
-
 }

@@ -6,7 +6,6 @@ import io.netty.handler.codec.http.FullHttpRequest;
  * 接口请求处理
  *
  * @author fengfei
- *
  */
 public interface RequestHandler {
 

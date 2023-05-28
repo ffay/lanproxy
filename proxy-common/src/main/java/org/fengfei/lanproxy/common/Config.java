@@ -8,7 +8,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 读取配置文件 默认的config.properties 和自定义都支持
- *
  */
 public class Config {
 
@@ -116,5 +115,4 @@ public class Config {
     public Boolean getBooleanValue(String key) {
         return LangUtil.parseBoolean(configuration.getProperty(key));
     }
-
 }

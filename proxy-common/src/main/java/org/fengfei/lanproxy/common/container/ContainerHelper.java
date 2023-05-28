@@ -1,7 +1,6 @@
 package org.fengfei.lanproxy.common.container;
 
 import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,7 +8,6 @@ import org.slf4j.LoggerFactory;
  * 容器启动工具类.
  *
  * @author fengfei
- *
  */
 public class ContainerHelper {
 
@@ -20,19 +18,14 @@ public class ContainerHelper {
     private static List<Container> cachedContainers;
 
     public static void start(List<Container> containers) {
-
         cachedContainers = containers;
-
         // 启动所有容器
         startContainers();
-
         Runtime.getRuntime().addShutdownHook(new Thread() {
 
             @Override
             public void run() {
-
                 synchronized (ContainerHelper.class) {
-
                     // 停止所有容器.
                     stopContainers();
                     running = false;
@@ -40,7 +33,6 @@ public class ContainerHelper {
                 }
             }
         });
-
         synchronized (ContainerHelper.class) {
             while (running) {
                 try {

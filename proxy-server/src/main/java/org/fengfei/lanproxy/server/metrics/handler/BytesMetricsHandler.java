@@ -1,9 +1,7 @@
 package org.fengfei.lanproxy.server.metrics.handler;
 
 import java.net.InetSocketAddress;
-
 import org.fengfei.lanproxy.server.metrics.MetricsCollector;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -42,5 +40,4 @@ public class BytesMetricsHandler extends ChannelDuplexHandler {
         MetricsCollector.getCollector(sa.getPort()).getChannels().decrementAndGet();
         super.channelInactive(ctx);
     }
-
 }

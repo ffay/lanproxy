@@ -1,14 +1,12 @@
 package org.fengfei.lanproxy.server.handlers;
 
 import java.util.List;
-
 import org.fengfei.lanproxy.protocol.Constants;
 import org.fengfei.lanproxy.protocol.ProxyMessage;
 import org.fengfei.lanproxy.server.ProxyChannelManager;
 import org.fengfei.lanproxy.server.config.ProxyConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
@@ -18,9 +16,7 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.SimpleChannelInboundHandler;
 
 /**
- *
  * @author fengfei
- *
  */
 public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessage> {
 
@@ -29,7 +25,7 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ProxyMessage proxyMessage) throws Exception {
         logger.debug("ProxyMessage received {}", proxyMessage.getType());
-        switch (proxyMessage.getType()) {
+        switch(proxyMessage.getType()) {
             case ProxyMessage.TYPE_HEARTBEAT:
                 handleHeartbeatMessage(ctx, proxyMessage);
                 break;
@@ -61,7 +57,6 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
 
     private void handleDisconnectMessage(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
         String clientKey = ctx.channel().attr(Constants.CLIENT_KEY).get();
-
         // 代理连接没有连上服务器由控制连接发送用户端断开连接消息
         if (clientKey == null) {
             String userId = proxyMessage.getUri();
@@ -72,13 +67,11 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
             }
             return;
         }
-
         Channel cmdChannel = ProxyChannelManager.getCmdChannel(clientKey);
         if (cmdChannel == null) {
             logger.warn("ConnectMessage:error cmd channel key {}", ctx.channel().attr(Constants.CLIENT_KEY).get());
             return;
         }
-
         Channel userChannel = ProxyChannelManager.removeUserChannelFromCmdChannel(cmdChannel, ctx.channel().attr(Constants.USER_ID).get());
         if (userChannel != null) {
             // 数据发送完成后再关闭连接，解决http1.0数据传输问题
@@ -96,21 +89,18 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
             logger.warn("ConnectMessage:null uri");
             return;
         }
-
         String[] tokens = uri.split("@");
         if (tokens.length != 2) {
             ctx.channel().close();
             logger.warn("ConnectMessage:error uri");
             return;
         }
-
         Channel cmdChannel = ProxyChannelManager.getCmdChannel(tokens[1]);
         if (cmdChannel == null) {
             ctx.channel().close();
             logger.warn("ConnectMessage:error cmd channel key {}", tokens[1]);
             return;
         }
-
         Channel userChannel = ProxyChannelManager.getUserChannel(cmdChannel, tokens[0]);
         if (userChannel != null) {
             ctx.channel().attr(Constants.USER_ID).set(tokens[0]);
@@ -138,14 +128,12 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
             ctx.channel().close();
             return;
         }
-
         Channel channel = ProxyChannelManager.getCmdChannel(clientKey);
         if (channel != null) {
             logger.warn("exist channel for key {}, {}", clientKey, channel);
             ctx.channel().close();
             return;
         }
-
         logger.info("set port => channel, {}, {}, {}", clientKey, ports, ctx.channel());
         ProxyChannelManager.addCmdChannel(ports, clientKey, ctx.channel());
     }
@@ -156,7 +144,6 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
         if (userChannel != null) {
             userChannel.config().setOption(ChannelOption.AUTO_READ, ctx.channel().isWritable());
         }
-
         super.channelWritabilityChanged(ctx);
     }
 
@@ -172,14 +159,12 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
             } else {
                 logger.warn("null cmdChannel, clientKey is {}", clientKey);
             }
-
             // 数据发送完成后再关闭连接，解决http1.0数据传输问题
             userChannel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
             userChannel.close();
         } else {
             ProxyChannelManager.removeCmdChannel(ctx.channel());
         }
-
         super.channelInactive(ctx);
     }
 

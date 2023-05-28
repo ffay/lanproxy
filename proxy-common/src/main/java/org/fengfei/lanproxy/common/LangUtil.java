@@ -4,11 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
  * 类型转换工具类.
  *
  * @author fengfei
- *
  */
 public class LangUtil {
 
@@ -72,8 +70,7 @@ public class LangUtil {
         return defaultValue;
     }
 
-    /***
-     *
+    /**
      * @Title: parseLong
      * @Description: long解析方法，可传入Long或String值
      * @param value Integer或String值

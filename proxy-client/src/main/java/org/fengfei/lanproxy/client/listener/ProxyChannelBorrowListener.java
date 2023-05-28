@@ -7,5 +7,4 @@ public interface ProxyChannelBorrowListener {
     void success(Channel channel);
 
     void error(Throwable cause);
-
 }

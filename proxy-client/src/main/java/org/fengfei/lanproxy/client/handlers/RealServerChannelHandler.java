@@ -5,7 +5,6 @@ import org.fengfei.lanproxy.protocol.Constants;
 import org.fengfei.lanproxy.protocol.ProxyMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -57,7 +56,6 @@ public class RealServerChannelHandler extends SimpleChannelInboundHandler<ByteBu
             proxyMessage.setUri(userId);
             channel.writeAndFlush(proxyMessage);
         }
-
         super.channelInactive(ctx);
     }
 
@@ -68,7 +66,6 @@ public class RealServerChannelHandler extends SimpleChannelInboundHandler<ByteBu
         if (proxyChannel != null) {
             proxyChannel.config().setOption(ChannelOption.AUTO_READ, realServerChannel.isWritable());
         }
-
         super.channelWritabilityChanged(ctx);
     }
 

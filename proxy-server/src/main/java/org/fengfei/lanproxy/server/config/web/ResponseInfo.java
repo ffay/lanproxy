@@ -71,5 +71,4 @@ public class ResponseInfo implements Serializable {
     public void setData(Object data) {
         this.data = data;
     }
-
 }

@@ -10,6 +10,7 @@ public class MimeType {
     final static Pattern pattern = Pattern.compile("\\S*[?]\\S*");
 
     private static Map<String, String> h = new HashMap<String, String>();
+
     static {
         h.put("", "application/octet-stream");
         h.put("323", "text/h323");

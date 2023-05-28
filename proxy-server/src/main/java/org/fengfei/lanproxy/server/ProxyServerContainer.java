@@ -3,10 +3,8 @@ package org.fengfei.lanproxy.server;
 import java.net.BindException;
 import java.util.Arrays;
 import java.util.List;
-
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
-
 import org.fengfei.lanproxy.common.Config;
 import org.fengfei.lanproxy.common.container.Container;
 import org.fengfei.lanproxy.common.container.ContainerHelper;
@@ -21,7 +19,6 @@ import org.fengfei.lanproxy.server.handlers.UserChannelHandler;
 import org.fengfei.lanproxy.server.metrics.handler.BytesMetricsHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandler;
@@ -54,10 +51,8 @@ public class ProxyServerContainer implements Container, ConfigChangedListener {
     private NioEventLoopGroup serverBossGroup;
 
     public ProxyServerContainer() {
-
         serverBossGroup = new NioEventLoopGroup();
         serverWorkerGroup = new NioEventLoopGroup();
-
         ProxyConfig.getInstance().addConfigChangedListener(this);
     }
 
@@ -74,22 +69,18 @@ public class ProxyServerContainer implements Container, ConfigChangedListener {
                 ch.pipeline().addLast(new ServerChannelHandler());
             }
         });
-
         try {
             bootstrap.bind(ProxyConfig.getInstance().getServerBind(), ProxyConfig.getInstance().getServerPort()).get();
             logger.info("proxy server start on port " + ProxyConfig.getInstance().getServerPort());
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
-
         if (Config.getInstance().getBooleanValue("server.ssl.enable", false)) {
             String host = Config.getInstance().getStringValue("server.ssl.bind", "0.0.0.0");
             int port = Config.getInstance().getIntValue("server.ssl.port");
             initializeSSLTCPTransport(host, port, new SslContextCreator().initSSLContext());
         }
-
         startUserPort();
-
     }
 
     private void initializeSSLTCPTransport(String host, int port, final SSLContext sslContext) {
@@ -112,7 +103,6 @@ public class ProxyServerContainer implements Container, ConfigChangedListener {
             }
         });
         try {
-
             // Bind and start to accept incoming connections.
             ChannelFuture f = b.bind(host, port);
             f.sync();
@@ -132,21 +122,18 @@ public class ProxyServerContainer implements Container, ConfigChangedListener {
                 ch.pipeline().addLast(new UserChannelHandler());
             }
         });
-
         List<Integer> ports = ProxyConfig.getInstance().getUserPorts();
         for (int port : ports) {
             try {
                 bootstrap.bind(port).get();
                 logger.info("bind user port " + port);
             } catch (Exception ex) {
-
                 // BindException表示该端口已经绑定过
                 if (!(ex.getCause() instanceof BindException)) {
                     throw new RuntimeException(ex);
                 }
             }
         }
-
     }
 
     @Override
@@ -166,12 +153,10 @@ public class ProxyServerContainer implements Container, ConfigChangedListener {
         if (needsClientAuth) {
             sslEngine.setNeedClientAuth(true);
         }
-
         return new SslHandler(sslEngine);
     }
 
     public static void main(String[] args) {
         ContainerHelper.start(Arrays.asList(new Container[] { new ProxyServerContainer(), new WebConfigContainer() }));
     }
-
 }
