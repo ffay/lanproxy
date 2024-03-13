@@ -24,6 +24,10 @@ public class MetricsCollector {
     private AtomicLong wroteMsgs = new AtomicLong();
 
     private AtomicInteger channels = new AtomicInteger();
+    /*
+    开始记录时间(每次重启时会重置)
+     */
+    private AtomicLong collectAt = new AtomicLong(System.currentTimeMillis());
 
     private MetricsCollector() {
     }
@@ -70,10 +74,10 @@ public class MetricsCollector {
         metrics.setPort(port);
         metrics.setReadBytes(readBytes.getAndSet(0));
         metrics.setWroteBytes(wroteBytes.getAndSet(0));
-        metrics.setTimestamp(System.currentTimeMillis());
         metrics.setReadMsgs(readMsgs.getAndSet(0));
         metrics.setWroteMsgs(wroteMsgs.getAndSet(0));
-
+        metrics.setTimestamp(collectAt.getAndSet(System.currentTimeMillis()));
+        System.out.println("collectAt:" + metrics.getTimestamp() + " | " + collectAt.get());
         return metrics;
     }
 
@@ -83,9 +87,9 @@ public class MetricsCollector {
         metrics.setPort(port);
         metrics.setReadBytes(readBytes.get());
         metrics.setWroteBytes(wroteBytes.get());
-        metrics.setTimestamp(System.currentTimeMillis());
         metrics.setReadMsgs(readMsgs.get());
         metrics.setWroteMsgs(wroteMsgs.get());
+        metrics.setTimestamp(collectAt.get());
 
         return metrics;
     }
