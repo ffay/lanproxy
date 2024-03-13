@@ -11,6 +11,8 @@
             <th class="i18n-inetport"></th>
             <th class="i18n-inflow"></th>
             <th class="i18n-outflow"></th>
+            <th>流入消息数量</th>
+            <th>流出消息数量</th>
             <th class="i18n-channels"></th>
         </tr>
     </thead>
@@ -20,6 +22,8 @@
             <td><%:=data[i].port%></td>
             <td><%:=bytesToSize(data[i].readBytes)%></td>
             <td><%:=bytesToSize(data[i].wroteBytes)%></td>
+            <td><%:=data[i].readMsgs%></td>
+            <td><%:=data[i].wroteMsgs%></td>
             <td><%:=data[i].channels%></td>
         </tr>
     <%}%>
