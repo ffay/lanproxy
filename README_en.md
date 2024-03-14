@@ -19,7 +19,7 @@ Lanproxy is a reverse proxy to help you expose a local server behind a NAT or fi
 - Run personal cloud services from your own private network
 
 ### Architecture
-![lanproxy](lanproxy.png)
+![lanproxy](assets/lanproxy.png)
 
 ### Configure
 
@@ -52,11 +52,11 @@ config.admin.password=admin
 
 > Visit your config web service using url http://ip:8090
 
-![webconfig](readme_en_client_list.png)
+![webconfig](assets/readme_en_client_list.png)
 
-![webconfig](readme_en_proxy_list.png)
+![webconfig](assets/readme_en_proxy_list.png)
 
-![webconfig](readme_en_stat_list.png)
+![webconfig](assets/readme_en_stat_list.png)
 
 #### client
 
