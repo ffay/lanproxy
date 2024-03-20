@@ -9,6 +9,7 @@
     <artifactId>proxy-server</artifactId>
     <packaging>jar</packaging>
     <name>proxy-server</name>
+    <version>${parent.version}.1</version>
     <url>http://maven.apache.org</url>
     <dependencies>
         <dependency>

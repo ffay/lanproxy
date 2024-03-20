@@ -128,6 +128,8 @@ public class ProxyServerContainer implements Container, ConfigChangedListener {
 
             @Override
             public void initChannel(SocketChannel ch) throws Exception {
+//              // TODO: 这里实现一个流量和访问日志的记录
+                logger.info("{}===>{}", ch.remoteAddress(), ch.localAddress());
                 ch.pipeline().addFirst(new BytesMetricsHandler());
                 ch.pipeline().addLast(new UserChannelHandler());
             }
@@ -171,7 +173,7 @@ public class ProxyServerContainer implements Container, ConfigChangedListener {
     }
 
     public static void main(String[] args) {
-        ContainerHelper.start(Arrays.asList(new Container[] { new ProxyServerContainer(), new WebConfigContainer() }));
+        ContainerHelper.start(Arrays.asList(new Container[]{new ProxyServerContainer(), new WebConfigContainer()}));
     }
 
 }
