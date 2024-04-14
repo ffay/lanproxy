@@ -1,0 +1,31 @@
+main {
+    padding-left: 300px;
+}
+
+.page-title {
+    /*border-bottom: 1px solid #bdbdbd ;*/
+    box-shadow: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.14);
+    background-color: transparent;
+    margin-bottom: 1rem;
+}
+
+#logo-container {
+    height: 5rem;
+    margin-bottom: 2rem;
+}
+
+#front-page-logo {
+    display: inline-block;
+    height: 100%;
+    pointer-events: none;
+}
+
+ul.sidenav.sidenav-fixed li.logo {
+    text-align: center;
+    margin-top: 32px;
+}
+
+th {
+    color: #616161 !important;
+}

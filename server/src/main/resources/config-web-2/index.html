@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://cdn.bootcss.com/material-design-icons/2.2.3/iconfont/material-icons.css" rel="stylesheet">
+    <link href="https://cdn.bootcss.com/materialize/1.0.0-rc.1/css/materialize.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="css/d3tree/d3-collapsible-tree.css"/>
+    <link rel="stylesheet" type="text/css" href="css/style.css"/>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <title>Port Bridge</title>
+</head>
+
+<body>
+<header>
+    <ul id="nav-mobile" class="sidenav sidenav-fixed" style="transform: translateX(0px);">
+        <li class="logo">
+            <a id="logo-container" href="/" class="brand-logo" title="Port Bridge">
+                <object id="front-page-logo" type="image/svg+xml" data="logo120.svg">Your browser does not support SVG
+                </object>
+            </a>
+        </li>
+        <li class="bold"><a href="mappings.html" class="waves-effect waves-teal">映射配置</a></li>
+        <li class="bold"><a href="ports.html" class="waves-effect waves-teal">端口占用</a></li>
+        <li class="bold"><a href="setting.html" class="waves-effect waves-teal">服务设置</a></li>
+        <li class="bold"><a href="logout" class="waves-effect waves-teal">退出</a></li>
+    </ul>
+</header>
+
+
+<main class="row">
+    <div class="col s12">
+
+        <div class="row">
+
+            <div class="col s12 page-title">
+                <h3 class="grey-text text-darken-2">Clients</h3>
+            </div>
+
+            <div class="col s12 " id="d3treePanel">
+            </div>
+
+            <div class="col s6" style="height: 370px;width: 95% " id="readMsgs"></div>
+            <div class="col s6" style="height: 370px;width: 95% " id="wroteMsgs"></div>
+            <div class="col s6" style="height: 370px;width: 95% " id="readBytes"></div>
+            <div class="col s6" style="height: 370px;width: 95% " id="wroteBytes"></div>
+            <div class="col s6" style="height: 370px;width: 95% " id="channels"></div>
+        </div>
+
+    </div>
+
+</main>
+<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+<script src="layer/layer.js"></script>
+<script src="https://cdn.bootcss.com/materialize/1.0.0-rc.1/js/materialize.min.js"></script>
+<script src="js/commons.js"></script>
+
+<script src="https://cdn.bootcss.com/d3/3.5.17/d3.min.js"></script>
+<script src="js/d3tree/d3.layout.js"></script>
+<script src="js/d3tree/concept-graph.js"></script>
+
+<script src="https://cdn.bootcss.com/echarts/4.1.0/echarts.common.min.js"></script>
+<!--<script src="js/index.js"></script>-->
+<script src="js/metrics.js"></script>
+<script>
+    //    renderD3("#d3treePanel");
+    metricsData.render();
+    var tree = CollapsibleTree("#d3treePanel");
+    tree.init('/config/d3');
+</script>
+</body>
+</html>

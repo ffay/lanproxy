@@ -1,0 +1,37 @@
+rect {
+    fill: none;
+    pointer-events: all;
+}
+
+pre {
+    font-size: 18px;
+}
+
+line {
+    stroke: #000;
+    stroke-width: 1.5px;
+}
+
+.node circle {
+    cursor: pointer;
+    fill: #fff;
+    stroke: grey;
+    stroke-width: 1.5px;
+}
+
+.node circle.online {
+    stroke: #388e3c;
+}
+
+.node text {
+}
+
+.node text.online {
+    color: #388e3c;;
+}
+
+path.link {
+    fill: none;
+    stroke: #afafaf;
+    stroke-width: 1.5px;
+}

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://cdn.bootcss.com/material-design-icons/2.2.3/iconfont/material-icons.css" rel="stylesheet">
+    <link href="https://cdn.bootcss.com/materialize/1.0.0-rc.1/css/materialize.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="css/style.css"/>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <title>映射配置 - Port Bridge</title>
+</head>
+
+<body>
+
+<header>
+
+    <ul id="nav-mobile" class="sidenav sidenav-fixed" style="transform: translateX(0px);">
+
+        <li class="logo">
+            <a id="logo-container" href="/" class="brand-logo" title="Port Bridge">
+                <object id="front-page-logo" type="image/svg+xml" data="logo120.svg">Your browser does not support SVG
+                </object>
+            </a>
+        </li>
+
+        <li class="bold active"><a href="mappings.html" class="waves-effect waves-teal">映射配置</a></li>
+        <li class="bold"><a href="ports.html" class="waves-effect waves-teal">端口占用</a></li>
+        <li class="bold"><a href="setting.html" class="waves-effect waves-teal">服务设置</a></li>
+        <li class="bold"><a href="logout" class="waves-effect waves-teal">退出</a></li>
+    </ul>
+</header>
+
+<main class="row">
+    <div class="col s12 page-title">
+        <h3 class="grey-text text-darken-2">Clients</h3>
+    </div>
+    <div class="col s12">
+        <button class="right waves-effect waves-teal btn-flat " onclick="searchPort.toastSearch()">
+            <i class="material-icons left">search</i>查找端口
+        </button>
+        <button class="right waves-effect waves-teal btn-flat " onclick="proxyConfig.toastAddClient()">
+            <i class="material-icons left">add</i>添加客户端
+        </button>
+        <button class="right waves-effect waves-teal btn-flat " onclick="proxyConfig.render()">
+            <i class="material-icons left">refresh</i>刷新
+        </button>
+    </div>
+    <div class="col s12">
+        <p class="grey-text"><i class="material-icons left">info_outline</i>点击相应名称可以修改</p>
+    </div>
+    <div class="col s12" id="proxyConfigContainer">
+
+    </div>
+
+</main>
+<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+<script src="layer/layer.js"></script>
+<script src="https://cdn.bootcss.com/materialize/1.0.0-rc.1/js/materialize.min.js"></script>
+<script src="js/commons.js"></script>
+<script src="js/port.js"></script>
+<script src="js/setting.js"></script>
+<script src="js/mapping.js"></script>
+<script>
+    sysSettings.load();
+    portInformation.initArray();
+    proxyConfig.render();
+</script>
+</body>
+</html>

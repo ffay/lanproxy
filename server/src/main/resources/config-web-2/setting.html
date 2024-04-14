@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://cdn.bootcss.com/material-design-icons/2.2.3/iconfont/material-icons.css" rel="stylesheet">
+    <link href="https://cdn.bootcss.com/materialize/1.0.0-rc.1/css/materialize.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="css/style.css"/>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <title>映射配置 - Port Bridge</title>
+    <style>
+        section > div > div > p {
+            padding: 0.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #e0e0e0;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+
+    <ul id="nav-mobile" class="sidenav sidenav-fixed" style="transform: translateX(0px);">
+        <li class="logo">
+            <a id="logo-container" href="/" class="brand-logo" title="Port Bridge">
+                <object id="front-page-logo" type="image/svg+xml" data="logo120.svg">Your browser does not support SVG
+                </object>
+            </a>
+        </li>
+        <li class="bold"><a href="mappings.html" class="waves-effect waves-teal">映射配置</a></li>
+        <li class="bold"><a href="ports.html" class="waves-effect waves-teal">端口占用</a></li>
+        <li class="bold active"><a href="setting.html" class="waves-effect waves-teal">服务设置</a></li>
+        <li class="bold"><a href="logout" class="waves-effect waves-teal">退出</a></li>
+    </ul>
+</header>
+
+<main class="row">
+
+    <div class="col s12 page-title">
+        <h3 class="grey-text text-darken-2">Setting</h3>
+    </div>
+
+    <section id="info-container" style="display: none;" class="col s12  container">
+        <div class="row">
+            <div class="col s12 m2 offset-m1">
+                <label class="right">服务端端口</label>
+            </div>
+            <div class="col s11 offset-s1 m4">
+                <p id="serverPort"></p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col s12 m2 offset-m1">
+                <label class="right">服务端地址</label>
+            </div>
+            <div class="col s11 offset-s1 m4">
+                <p id="serverBind"></p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col s12 m2 offset-m1">
+                <label class="right">配置页面端口</label>
+            </div>
+            <div class="col s11 offset-s1 m4">
+                <p id="configServerPort"></p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col s12 m2 offset-m1">
+                <label class="right">配置页面地址</label>
+            </div>
+            <div class="col s11 offset-s1 m4">
+                <p id="configServerBind"></p>
+            </div>
+
+        </div>
+
+        <div class="row">
+            <div class="col s12 m2 offset-m1">
+                <label class="right">管理员</label>
+            </div>
+            <div class="col s11 offset-s1 m4">
+                <p id="configAdminUsername"></p>
+            </div>
+        </div>
+
+    </section>
+</main>
+<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+<script src="layer/layer.js"></script>
+<script src="https://cdn.bootcss.com/materialize/1.0.0-rc.1/js/materialize.min.js"></script>
+<script src="js/commons.js"></script>
+<script src="js/setting.js"></script>
+<script>
+    sysSettings.render()
+</script>
+</body>
+</html>
