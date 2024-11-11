@@ -4,7 +4,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import org.fengfei.lanproxy.server.requestlogs.RequestLog;
 import org.fengfei.lanproxy.server.requestlogs.RequestLogCollector;
-import org.fengfei.lanproxy.server.utils.TCPHelper;
+import org.fengfei.lanproxy.server.utils.PacketParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,11 +40,11 @@ public class RequestLogHandler {
             while (true) {
                 try {
                     RequestLog log = logQueue.take();
-                    // 解析请求包
-                    String requestInfo = TCPHelper.parsePacket(log.getData());
-                    log.setRequestInfo(requestInfo);
+                    // 使用新的包解析器解析请求
+                    PacketParser.PacketInfo packetInfo = PacketParser.parsePacket(log.getData());
+                    log.setRequestInfo(packetInfo.toString());
                     // 写入日志
-                    logger.info("Request from {}:{} - {}", log.getIp(), log.getPort(), requestInfo);
+                    logger.info("Request from {}:{} - {}", log.getIp(), log.getPort(), packetInfo.getProtocol());
                     // 修改日志处理逻辑，保存最近的日志
                     saveLog(log);
                 } catch (Exception e) {
