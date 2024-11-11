@@ -73,6 +73,9 @@ config.admin.password=admin
 
 ![webconfig](assets/readme_zh_stat_list.png)
 
+TCP请求包内容记录并在网页上展示:
+![RequestLogShow](assets/RequestLog.png)
+
 > 一个server可以支持多个客户端连接
 > 配置数据存放在 ~/.lanproxy/config.json 文件中
 

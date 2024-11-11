@@ -13,11 +13,14 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.SimpleChannelInboundHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 处理服务端 channel.
  */
 public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
+    private static final Logger logger = LoggerFactory.getLogger(UserChannelHandler.class);
 
     private static final AtomicLong userIdProducer = new AtomicLong(0);
     private RequestInterceptor interceptor = new RequestInterceptor();
@@ -48,11 +51,12 @@ public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
             // 该端口还没有代理客户端
             ctx.channel().close();
         } else {
+            String userId = ProxyChannelManager.getUserChannelUserId(userChannel);
+            logger.info("buf.readableBytes(): {}", buf.readableBytes());
+            requestLogHandler.logRequest(ctx.channel(), "UserId:" + userId, buf.copy());
             byte[] bytes = new byte[buf.readableBytes()];
             buf.readBytes(bytes);
-            String userId = ProxyChannelManager.getUserChannelUserId(userChannel);
             // 记录请求
-            requestLogHandler.logRequest(ctx.channel(), "UserId:" + userId);
             // 拦截检查
             if (interceptor.interceptRequest(ctx.channel())) {
                 ctx.close();

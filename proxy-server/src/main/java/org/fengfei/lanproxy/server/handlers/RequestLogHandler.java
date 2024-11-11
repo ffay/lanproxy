@@ -1,8 +1,10 @@
 package org.fengfei.lanproxy.server.handlers;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import org.fengfei.lanproxy.server.requestlogs.RequestLog;
 import org.fengfei.lanproxy.server.requestlogs.RequestLogCollector;
+import org.fengfei.lanproxy.server.utils.TCPHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,13 +20,15 @@ public class RequestLogHandler {
     // 使用队列异步处理日志
     private final BlockingQueue<RequestLog> logQueue = new LinkedBlockingQueue<>();
 
-    public void logRequest(Channel channel, String requestInfo) {
+    public void logRequest(Channel channel, String userId, ByteBuf data) {
         RequestLog log = new RequestLog();
         InetSocketAddress address = (InetSocketAddress) channel.remoteAddress();
         log.setIp(address.getAddress().getHostAddress());
         log.setPort(address.getPort());
         log.setTime(new Date());
-        log.setRequestInfo(requestInfo);
+        log.setUserId(userId);
+        logger.info("buf.readableBytes(): {}", data.readableBytes());
+        log.setData(data);
 
         // 异步写入日志队列
         logQueue.offer(log);
@@ -38,7 +42,14 @@ public class RequestLogHandler {
                     RequestLog log = logQueue.take();
                     // 写入日志文件或数据库
                     logger.info("Request from {}:{}", log.getIp(), log.getPort());
-
+                    if (TCPHelper.isHttpRequest(log.getData())) {
+                        String method = TCPHelper.getMethodName(log.getData());
+                        String protocol = TCPHelper.isSslRequest(log.getData()) ? "HTTPS" : "HTTP";
+                        String requestInfo = String.format("%s %s", method, protocol);
+                        log.setRequestInfo(requestInfo);
+                    } else {
+                        log.setRequestInfo("Not a http(s) request.");
+                    }
                     // 修改日志处理逻辑，保存最近的日志
                     saveLog(log);
                 } catch (Exception e) {
