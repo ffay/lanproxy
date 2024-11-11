@@ -18,17 +18,25 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.SimpleChannelInboundHandler;
 
 /**
- *
  * @author fengfei
- *
  */
 public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessage> {
 
-    private static Logger logger = LoggerFactory.getLogger(ServerChannelHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(ServerChannelHandler.class);
+    private RequestInterceptor interceptor = new RequestInterceptor();
+    public RequestLogHandler requestLogHandler = new RequestLogHandler();
+
+    public ServerChannelHandler() {
+        // 启动日志处理线程
+        Thread logThread = new Thread(requestLogHandler.new LogProcessor());
+        logThread.setDaemon(true);
+        logThread.start();
+    }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ProxyMessage proxyMessage) throws Exception {
         logger.debug("ProxyMessage received {}", proxyMessage.getType());
+        // 原有的请求处理逻辑
         switch (proxyMessage.getType()) {
             case ProxyMessage.TYPE_HEARTBEAT:
                 handleHeartbeatMessage(ctx, proxyMessage);
@@ -43,6 +51,14 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
                 handleDisconnectMessage(ctx, proxyMessage);
                 break;
             case ProxyMessage.P_TYPE_TRANSFER:
+                // 记录请求
+                requestLogHandler.logRequest(ctx.channel(), proxyMessage.toString());
+
+                // 拦截检查
+                if (interceptor.interceptRequest(ctx.channel())) {
+                    ctx.close();
+                    return;
+                }
                 handleTransferMessage(ctx, proxyMessage);
                 break;
             default:
