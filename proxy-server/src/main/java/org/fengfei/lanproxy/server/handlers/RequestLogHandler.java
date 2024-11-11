@@ -40,16 +40,11 @@ public class RequestLogHandler {
             while (true) {
                 try {
                     RequestLog log = logQueue.take();
-                    // 写入日志文件或数据库
-                    logger.info("Request from {}:{}", log.getIp(), log.getPort());
-                    if (TCPHelper.isHttpRequest(log.getData())) {
-                        String method = TCPHelper.getMethodName(log.getData());
-                        String protocol = TCPHelper.isSslRequest(log.getData()) ? "HTTPS" : "HTTP";
-                        String requestInfo = String.format("%s %s", method, protocol);
-                        log.setRequestInfo(requestInfo);
-                    } else {
-                        log.setRequestInfo("Not a http(s) request.");
-                    }
+                    // 解析请求包
+                    String requestInfo = TCPHelper.parsePacket(log.getData());
+                    log.setRequestInfo(requestInfo);
+                    // 写入日志
+                    logger.info("Request from {}:{} - {}", log.getIp(), log.getPort(), requestInfo);
                     // 修改日志处理逻辑，保存最近的日志
                     saveLog(log);
                 } catch (Exception e) {
