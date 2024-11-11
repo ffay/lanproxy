@@ -19,7 +19,16 @@ import io.netty.channel.SimpleChannelInboundHandler;
  */
 public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
-    private static AtomicLong userIdProducer = new AtomicLong(0);
+    private static final AtomicLong userIdProducer = new AtomicLong(0);
+    private RequestInterceptor interceptor = new RequestInterceptor();
+    public RequestLogHandler requestLogHandler = new RequestLogHandler();
+
+    public UserChannelHandler() {
+        // 启动日志处理线程
+        Thread logThread = new Thread(requestLogHandler.new LogProcessor());
+        logThread.setDaemon(true);
+        logThread.start();
+    }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
@@ -42,6 +51,13 @@ public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
             byte[] bytes = new byte[buf.readableBytes()];
             buf.readBytes(bytes);
             String userId = ProxyChannelManager.getUserChannelUserId(userChannel);
+            // 记录请求
+            requestLogHandler.logRequest(ctx.channel(), "UserId:" + userId);
+            // 拦截检查
+            if (interceptor.interceptRequest(ctx.channel())) {
+                ctx.close();
+                return;
+            }
             ProxyMessage proxyMessage = new ProxyMessage();
             proxyMessage.setType(ProxyMessage.P_TYPE_TRANSFER);
             proxyMessage.setUri(userId);

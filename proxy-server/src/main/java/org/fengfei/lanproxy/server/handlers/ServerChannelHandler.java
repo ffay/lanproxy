@@ -23,14 +23,8 @@ import io.netty.channel.SimpleChannelInboundHandler;
 public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessage> {
 
     private static final Logger logger = LoggerFactory.getLogger(ServerChannelHandler.class);
-    private RequestInterceptor interceptor = new RequestInterceptor();
-    public RequestLogHandler requestLogHandler = new RequestLogHandler();
 
     public ServerChannelHandler() {
-        // 启动日志处理线程
-        Thread logThread = new Thread(requestLogHandler.new LogProcessor());
-        logThread.setDaemon(true);
-        logThread.start();
     }
 
     @Override
@@ -51,14 +45,6 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
                 handleDisconnectMessage(ctx, proxyMessage);
                 break;
             case ProxyMessage.P_TYPE_TRANSFER:
-                // 记录请求
-                requestLogHandler.logRequest(ctx.channel(), proxyMessage.toString());
-
-                // 拦截检查
-                if (interceptor.interceptRequest(ctx.channel())) {
-                    ctx.close();
-                    return;
-                }
                 handleTransferMessage(ctx, proxyMessage);
                 break;
             default:
