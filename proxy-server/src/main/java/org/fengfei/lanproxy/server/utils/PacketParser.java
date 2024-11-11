@@ -48,7 +48,15 @@ public class PacketParser {
             StringBuilder sb = new StringBuilder();
             sb.append(protocol).append(" - ");
 
-            if ("PostgreSQL".equals(protocol)) {
+            if ("SSH".equals(protocol)) {
+                sb.append("Type: ").append(attributes.get("messageType"));
+                if (attributes.containsKey("version")) {
+                    sb.append(", Version: ").append(attributes.get("version"));
+                }
+                if (attributes.containsKey("software")) {
+                    sb.append(", Client: ").append(attributes.get("software"));
+                }
+            } else if ("PostgreSQL".equals(protocol)) {
                 sb.append("Type: ").append(attributes.get("messageType"));
                 if ("StartupMessage".equals(attributes.get("messageType"))) {
                     sb.append(", Version: ").append(attributes.get("protocolVersion"));
@@ -86,7 +94,9 @@ public class PacketParser {
         }
 
         // 检测协议
-        if (isHttpRequest(buf)) {
+        if (isSSHPacket(buf)) {
+            parseSSHPacket(buf, info);
+        } else if (isHttpRequest(buf)) {
             parseHttpRequest(buf, info);
         } else if (isSslRequest(buf)) {
             parseSslRequest(buf, info);
@@ -218,6 +228,34 @@ public class PacketParser {
                 info.getAttributes().put("parameters", params);
             }
         }
+    }
+
+    private static boolean isSSHPacket(ByteBuf buf) {
+        if (buf.readableBytes() < 4) return false;
+        
+        // SSH协议以"SSH-"开头
+        byte[] header = new byte[4];
+        buf.getBytes(buf.readerIndex(), header);
+        return new String(header).equals("SSH-");
+    }
+
+    private static void parseSSHPacket(ByteBuf buf, PacketInfo info) {
+        info.setProtocol("SSH");
+        
+        // 读取SSH版本信息
+        String content = buf.toString(StandardCharsets.UTF_8);
+        String[] parts = content.split("-", 3);
+        if (parts.length >= 3) {
+            // 格式通常是: SSH-2.0-OpenSSH_8.1
+            String version = parts[1];
+            String software = parts[2].split("\\r?\\n")[0];
+            
+            info.getAttributes().put("version", version);
+            info.getAttributes().put("software", software);
+            info.getAttributes().put("messageType", "Version Exchange");
+        }
+        
+        info.getAttributes().put("size", buf.readableBytes());
     }
 
     // 其他辅助方法...
