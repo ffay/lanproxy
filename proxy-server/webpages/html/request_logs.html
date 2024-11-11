@@ -4,51 +4,91 @@
     <meta charset="utf-8">
     <title>请求日志</title>
     <link rel="stylesheet" href="../lanproxy-config/layui/css/layui.css" media="all">
+    <style>
+        /* 设置html和body的高度为100% */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        /* 容器样式 */
+        .layui-container {
+            height: 100%;
+            width: 100%;
+            max-width: none;
+            padding: 0;
+        }
+        /* 表格容器样式 */
+        .table-container {
+            height: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+    </style>
 </head>
 <body>
-<div class="layui-container">
-    <table id="logTable" lay-filter="logTable"></table>
-</div>
+    <div class="layui-container">
+        <div class="table-container">
+            <table id="logTable" lay-filter="logTable"></table>
+        </div>
+    </div>
 
-<script src="//unpkg.com/layui@2.9.7/dist/layui.js"></script>
-<script>
-    layui.use(['table', 'jquery'], function(){
-        var table = layui.table;
-        var $ = layui.jquery;
-        
-        table.render({
-            elem: '#logTable'
-            ,method: 'POST'
-            ,url: '/api/logs'
-            ,cols: [[
-                {field: 'time', title: '时间', width: 200}
-                ,{field: 'ip', title: 'IP地址', width: 150}
-                ,{field: 'port', title: '端口', width: 100}
-                ,{field: 'requestInfo', title: '请求信息'}
-            ]]
-            ,response: {
-                statusCode: 20000 // 重新规定成功的状态码为 200，table 组件默认为 0
-            }
-            ,page: true
-            ,limit: 20
-            ,height: 'full-100'
-            ,parseData: function(res){
-                console.log("parseData:",res);
-                let data = [];
-                for(let i=0;i<res.data.length;i++){
-                    data[i] = res.data[i]
+    <script src="//unpkg.com/layui@2.9.7/dist/layui.js"></script>
+    <script>
+        layui.use(['table', 'jquery'], function(){
+            var table = layui.table;
+            var $ = layui.jquery;
+            
+            // 计算表格高度
+            var getTableHeight = function() {
+                return $(window).height() - 20; // 减去内边距
+            };
+            
+            table.render({
+                elem: '#logTable'
+                ,method: 'POST'
+                ,url: '/api/logs'
+                ,cols: [[
+                    {field: 'time', title: '时间', width: '10%'}
+                    ,{field: 'ip', title: 'IP地址', width: '10%'}
+                    ,{field: 'port', title: '端口', width: '6%'}
+                    ,{field: 'requestInfo', title: '请求信息'}
+                ]]
+                ,response: {
+                    statusCode: 20000
                 }
-                return {
-                    "code": res.code, //解析接口状态
-                    "msg": res.message, //解析提示文本
-                    "count": res.total, //解析数据长度
-                    "data": data //解析数据列表
-                };
-        }
+                ,page: true
+                ,limit: 20
+                ,height: getTableHeight()
+                ,parseData: function(res){
+                    console.log("parseData:",res);
+                    let data = [];
+                    for(let i=0;i<res.data.length;i++){
+                        data[i] = res.data[i]
+                    }
+                    return {
+                        "code": res.code,
+                        "msg": res.message,
+                        "count": res.total,
+                        "data": data
+                    };
+                }
+            });
+            
+            // 监听窗口大小变化，重新设置表格高度
+            $(window).resize(function(){
+                table.resize('logTable', {
+                    height: getTableHeight()
+                });
+            });
+            
+            // 每5秒重新加载数据
+            setInterval(function(){
+                table.reload('logTable', {
+                    scrollPos: true
+                });
+            }, 10000);
         });
-        
-        // 每隔一段时间重新加载数据
-    });
-</script>
+    </script>
 </body>
 </html> 
