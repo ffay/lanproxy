@@ -1,0 +1,60 @@
+<div class="layui-tab layui-tab-brief">
+    <ul class="layui-tab-title site-demo-title">
+        <li class="layui-this">请求日志</li>
+    </ul>
+    <div class="main-content">
+        <table id="logTable" lay-filter="logTable"></table>
+    </div>
+</div>
+
+<script>
+    layui.use(['table', 'jquery'], function(){
+        var table = layui.table;
+        var $ = layui.jquery;
+
+        // 计算表格高度
+        var getTableHeight = function() {
+            return $(window).height() - 180;
+        };
+
+        table.render({
+            elem: '#logTable'
+            ,method: 'POST'
+            ,url: '/api/logs'
+            ,cols: [[
+                {field: 'time', title: '时间', width: '10%'}
+                ,{field: 'ip', title: 'IP地址', width: '10%'}
+                ,{field: 'port', title: '端口', width: '6%'}
+                ,{field: 'requestInfo', title: '请求信息'}
+            ]]
+            ,response: {
+                statusCode: 20000
+            }
+            ,page: true
+            ,limit: 20
+            ,height: getTableHeight()
+            ,parseData: function(res){
+                return {
+                    "code": res.code,
+                    "msg": res.message,
+                    "count": res.total,
+                    "data": res.data
+                };
+            }
+        });
+
+        // 监听窗口大小变化
+        $(window).resize(function(){
+            table.resize('logTable', {
+                height: getTableHeight()
+            });
+        });
+
+        // 定时刷新
+        setInterval(function(){
+            table.reload('logTable', {
+                scrollPos: true
+            });
+        }, 10000);
+    });
+</script>
