@@ -1,0 +1,29 @@
+# 使用OpenJDK 8作为基础镜像
+FROM openjdk:8-jre-alpine
+
+# 设置工作目录
+WORKDIR /app
+
+# 安装必要的工具
+RUN apk add --no-cache bash
+
+# 创建必要的目录
+RUN mkdir -p /app/conf /app/lib /app/logs
+
+# 复制构建好的jar文件和依赖
+COPY distribution/proxy-client-0.1/lib/ /app/lib/
+COPY distribution/proxy-client-0.1/conf/ /app/conf/
+
+# 复制启动脚本
+COPY docker/client-entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+# 设置环境变量
+ENV CLIENT_KEY=
+ENV SERVER_HOST=proxy-server
+ENV SERVER_PORT=4900
+ENV SSL_ENABLE=false
+ENV JAVA_OPTS="-Xms128m -Xmx256m"
+
+# 启动命令
+CMD ["/app/entrypoint.sh"]

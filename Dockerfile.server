@@ -1,0 +1,40 @@
+# 使用OpenJDK 8作为基础镜像
+FROM openjdk:8-jre-alpine
+
+# 设置工作目录
+WORKDIR /app
+
+# 安装必要的工具
+RUN apk add --no-cache bash
+
+# 创建必要的目录
+RUN mkdir -p /app/conf /app/lib /app/logs /app/webpages
+
+# 复制构建好的jar文件和依赖
+COPY distribution/proxy-server-0.1.1/lib/ /app/lib/
+COPY distribution/proxy-server-0.1.1/conf/ /app/conf/
+COPY distribution/proxy-server-0.1.1/webpages/ /app/webpages/
+
+# 复制启动脚本
+COPY docker/server-entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+# 暴露端口
+# 4900: 代理服务器与代理客户端通信端口
+# 4993: SSL端口
+# 8090: Web管理界面端口
+EXPOSE 4900 4993 8090
+
+# 设置环境变量
+ENV SERVER_BIND=0.0.0.0
+ENV SERVER_PORT=4900
+ENV SSL_ENABLE=true
+ENV SSL_PORT=4993
+ENV CONFIG_SERVER_BIND=0.0.0.0
+ENV CONFIG_SERVER_PORT=8090
+ENV CONFIG_ADMIN_USERNAME=admin
+ENV CONFIG_ADMIN_PASSWORD=admin
+ENV JAVA_OPTS="-Xms256m -Xmx512m"
+
+# 启动命令
+CMD ["/app/entrypoint.sh"]

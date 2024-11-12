@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  # 代理服务器
+  proxy-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: lanproxy-server
+    ports:
+      - "4900:4900"   # 代理服务端口
+      - "4993:4993"   # SSL端口
+      - "8090:8090"   # Web管理界面
+      - "8080:8080"   # 示例用户端口
+      - "8081:8081"   # 示例用户端口
+      - "8082:8082"   # 示例用户端口
+    environment:
+      - SERVER_BIND=0.0.0.0
+      - SERVER_PORT=4900
+      - SSL_ENABLE=true
+      - SSL_PORT=4993
+      - CONFIG_SERVER_BIND=0.0.0.0
+      - CONFIG_SERVER_PORT=8090
+      - CONFIG_ADMIN_USERNAME=admin
+      - CONFIG_ADMIN_PASSWORD=admin
+      - JAVA_OPTS=-Xms256m -Xmx512m
+    volumes:
+      - ./data/server-logs:/app/logs
+      - ./data/server-config:/root/.lanproxy
+    networks:
+      - lanproxy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "4900"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # 代理客户端示例
+  proxy-client:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    container_name: lanproxy-client
+    environment:
+      - CLIENT_KEY=your_client_key_here  # 需要从服务器管理界面获取
+      - SERVER_HOST=proxy-server
+      - SERVER_PORT=4900
+      - SSL_ENABLE=false
+      - JAVA_OPTS=-Xms128m -Xmx256m
+    volumes:
+      - ./data/client-logs:/app/logs
+    networks:
+      - lanproxy-network
+    depends_on:
+      - proxy-server
+    restart: unless-stopped
+    profiles:
+      - client  # 使用profile控制是否启动客户端
+
+networks:
+  lanproxy-network:
+    driver: bridge
+
+volumes:
+  server-logs:
+  client-logs:
+  server-config:
