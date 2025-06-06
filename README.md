@@ -1,11 +1,27 @@
-## lanproxy多用户版本（运营版）上线，欢迎体验
+## 技术交流QQ群 736294209
 
-https://nat.io2c.com
+## Lanproxy运营版上线，欢迎体验
 
-## 技术交流QQ群 1067424330
+https://nat.nioee.com
 
-lanproxy
---------
+
+## Lanproxy个人升级版
+
+核心功能：
+
+- 穿透基础功能，同开源版本，高性能，可同时支持数万穿透连接
+- 全新界面UI，操作简单，部署简单（java+mysql）
+- 自定义域名绑定，为你穿透端口绑定域名，不再是IP+端口裸奔访问
+- 自定义域名ssl证书，也可为你绑定的域名开启ssl证书自动申请与续期，无需人工干涉
+- 自定义客户端离线展示页面，可以利用该功能展示一些html单页
+- 支持http/https/socks5多种模式使用客户端网络代理上网，家里轻松访问公司网络
+- 多用户支持，同时满足多人日常穿透需求
+
+体验地址 https://lanp.nioee.com (测试用户名密码 test/123456)
+
+![panel](panel.png)
+
+## Lanproxy开源免费版
 
 [README](README_en.md) | [中文文档](README.md)
 
@@ -13,7 +29,7 @@ lanproxy是一个将局域网个人电脑、服务器代理到公网的内网穿
 
 ### 相关地址
 
-- 主页 https://lan.io2c.com
+- 主页 https://nat.nioee.com
 - lanproxy-go-client https://github.com/ffay/lanproxy-go-client
 - 发布包下载地址 https://github.com/ffay/lanproxy/releases
 
@@ -129,5 +145,5 @@ nohup ./client_linux_amd64 -s SERVER_IP -p SERVER_SSL_PORT -k CLIENT_KEY -ssl tr
 
 #### 其他
 
-- 在家里使用公司的网络，可以和 https://github.com/ffay/http-proxy-server 这个http代理项目配合使用
-- 对于正常网站，80和443端口只有一个，可以和 https://github.com/ffay/proxygateway 这个项目或nginx配合使用，不同域名反向代理到内部其他端口上去，再由其他端口映射到内网即可；对于ssh或远程桌面等可随意选择其他未占用的端口映射到内网
+- 在家里使用公司的网络，可以和 https://github.com/ffay/http-proxy-server 这个http代理项目配合使用（个人升级版已经内置代理上网功能，详细资料 https://file.nioee.com/f/76ebbce67c864e4dbe7e/ ）
+- 对于正常网站，80和443端口只有一个，可以购买个人升级版本解决端口复用问题

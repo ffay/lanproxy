@@ -51,7 +51,7 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
     }
 
     private void outputContent(ChannelHandlerContext ctx, FullHttpRequest request, int code, String content,
-            String mimeType) {
+                               String mimeType) {
 
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(code),
                 Unpooled.wrappedBuffer(content.getBytes(Charset.forName("UTF-8"))));
@@ -76,6 +76,11 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
         HttpResponseStatus status = HttpResponseStatus.OK;
         URI uri = new URI(request.getUri());
         String uriPath = uri.getPath();
+        if (uriPath.contains("../")) {
+            status = HttpResponseStatus.FORBIDDEN;
+            outputContent(ctx, request, status.code(), status.toString(), "text/html");
+            return;
+        }
         uriPath = uriPath.equals("/") ? "/index.html" : uriPath;
         String path = PAGE_FOLDER + uriPath;
         File rfile = new File(path);
