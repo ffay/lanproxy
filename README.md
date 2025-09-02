@@ -7,11 +7,68 @@ lanproxy是一个将局域网个人电脑、服务器代理到公网的内网穿
 ### 相关地址
 
 - lanproxy-go-client https://github.com/Haoke98/lanproxy-go-client
-- 发布包下载地址 https://github.com/ffay/lanproxy/releases
+- 发布包下载地址 https://github.com/Haoke98/lanproxy/releases
 
 ### 使用
 
-#### 获取发布包
+#### Docker 一键部署（推荐）
+
+##### 快速开始
+
+1. **克隆项目并构建**
+   ```bash
+   git clone https://github.com/Haoke98/lanproxy.git
+   cd lanproxy
+   chmod +x docker/build.sh
+   ./docker/build.sh
+   ```
+
+2. **配置环境变量**
+   ```bash
+   cp .env.example .env
+   # 编辑 .env 文件，配置你的参数
+   ```
+
+3. **启动服务**
+   ```bash
+   # 启动服务端
+   chmod +x docker/deploy.sh
+   ./docker/deploy.sh server
+   
+   # 或启动服务端和客户端
+   ./docker/deploy.sh all
+   ```
+
+4. **访问管理界面**
+   - 打开浏览器访问：http://localhost:8090
+   - 默认用户名/密码：admin/admin
+
+##### Docker Compose 部署
+
+```bash
+# 仅启动服务端
+docker-compose up -d proxy-server
+
+# 启动服务端和客户端
+docker-compose --profile client up -d
+```
+
+##### 环境变量配置
+
+主要配置项：
+- `SERVER_BIND`: 服务器绑定地址（默认：0.0.0.0）
+- `SERVER_PORT`: 代理通信端口（默认：4900）
+- `WEB_PORT`: Web管理端口（默认：8090）
+- `CONFIG_ADMIN_USERNAME`: 管理员用户名（默认：admin）
+- `CONFIG_ADMIN_PASSWORD`: 管理员密码（默认：admin）
+- `CLIENT_KEY`: 客户端密钥
+- `SERVER_HOST`: 服务器地址
+
+更多配置说明请参考 [Docker部署文档](DOCKER_README.md)
+
+#### 传统部署方式
+
+##### 获取发布包
 
 - 拉取源码，运行 mvn package，打包后的资源放在distribution目录中，包括client和server
 - 或直接下载发布包  https://github.com/ffay/lanproxy/releases
