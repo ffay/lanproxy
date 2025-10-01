@@ -2,29 +2,11 @@
 	<ul class="layui-tab-title site-demo-title">
 		<li class="layui-this tab-title"></li>
 	</ul>
-	<div class="main-content"></div>
+	<div class="main-content">
+        <table id="exampleTable" lay-filter="exampleTable"></table>
+    </div>
 </div>
 <script id="stat-tpl" type="text/html">
-<table class="layui-table" lay-skin="line">
-    <thead>
-        <tr>
-            <th class="i18n-inetport"></th>
-            <th class="i18n-inflow"></th>
-            <th class="i18n-outflow"></th>
-            <th class="i18n-channels"></th>
-        </tr>
-    </thead>
-    <tbody>
-    <%for(var i = 0; i < data.length; i++) {%>
-        <tr>
-            <td><%:=data[i].port%></td>
-            <td><%:=bytesToSize(data[i].readBytes)%></td>
-            <td><%:=bytesToSize(data[i].wroteBytes)%></td>
-            <td><%:=data[i].channels%></td>
-        </tr>
-    <%}%>
-    </tbody>
-</table>
 </script>
 <script>
     $(".tab-title").html($.i18n.prop('menu.client.statistics'));
@@ -38,14 +20,69 @@
 		return (bytes / Math.pow(k, i)).toPrecision(3) + ' ' + sizes[i];
 	}
 
-	api_invoke("/metrics/get", {}, function(data) {
-		var html = template($("#stat-tpl").html(), {
-			data : data.data
-		});
-		$(".main-content").html(html);
-		$(".i18n-inetport").html($.i18n.prop('statistics.inetport'));
-		$(".i18n-inflow").html($.i18n.prop('statistics.inflow'));
-		$(".i18n-outflow").html($.i18n.prop('statistics.outflow'));
-		$(".i18n-channels").html($.i18n.prop('statistics.channels'));
-	});
+	function readableTimestamp(timestamp){
+
+        // 将时间戳转换为Date对象
+        const date = new Date(timestamp);
+
+        // 格式化日期
+        const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+        return formattedDate;
+
+	}
+
+    // 初始化表格
+    layui.use('table', function(){
+      const table = layui.table;
+
+      // 渲染表格
+      table.render({
+        elem: '#exampleTable' // 指定原始表格元素选择器
+        ,url: '/metrics/get' // 数据接口
+        ,method: 'POST'
+        ,params: {}
+        ,cols: [[ // 表头
+          {field: 'port', title: '端口', width:120, sort: true, fixed: 'left'}
+          ,{field: 'readBytes', title: '读取字节数', width:140, sort:true, align:'right'}
+          ,{field: 'readBytesH', title: '读取字节数', width:120, sort:true , align:'right'}
+          ,{field: 'wroteBytes', title: '写入字节数', width:140, sort:true, align:'right'}
+          ,{field: 'wroteBytesH', title: '写入字节数', width:120, sort:true, align:'right'}
+          ,{field: 'readMsgs', title: '流入消息数量', width:140, sort:true, align:'right'}
+          ,{field: 'wroteMsgs', title: '流出消息数量', width:140, sort:true, align:'right'}
+          ,{field: 'channels', title: '通道数', width:120, sort:true, align:'right'}
+          ,{field: 'timestamp', title: '开始收集于', width:180}
+        ]],
+        response: {
+          statusCode: 20000 // 重新规定成功的状态码为 200，table 组件默认为 0
+        }
+        ,parseData: function(res){
+
+            console.log("parseData:",res);
+            let data = [];
+            for(let i=0;i<res.data.length;i++){
+                data[i] = res.data[i]
+                data[i]["timestamp"] = readableTimestamp(data[i]["timestamp"])
+                data[i]["readBytesH"] = bytesToSize(data[i]["readBytes"])
+                data[i]["wroteBytesH"] = bytesToSize(data[i]["wroteBytes"])
+            }
+            return {
+                "code": res.code, //解析接口状态
+                "msg": res.message, //解析提示文本
+                "count": res.total, //解析数据长度
+                "data": data //解析数据列表
+            };
+        }
+      });
+      // 每隔一段时间重新加载数据
+      setInterval(function(){
+          console.log("数据更新...");
+          table.reloadData('exampleTable', {
+              where: {}, // 数据异步请求时携带的字段集 --- 属性设置有效，因属于数据相关属性
+              scrollPos: true, // 设定重载数据或切换分页时的滚动条的位置状态 --- 属性设置有效
+              // …
+              height: 2000 // 高度  --- 属性设置无效，因不属于数据相关属性
+          });
+      },1000);
+    });
+
 </script>

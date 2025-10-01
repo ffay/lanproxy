@@ -1,27 +1,4 @@
-## 技术交流QQ群 736294209
-
-## Lanproxy运营版上线，欢迎体验
-
-https://nat.nioee.com
-
-
-## Lanproxy个人升级版
-
-核心功能：
-
-- 穿透基础功能，同开源版本，高性能，可同时支持数万穿透连接
-- 全新界面UI，操作简单，部署简单（java+mysql）
-- 自定义域名绑定，为你穿透端口绑定域名，不再是IP+端口裸奔访问
-- 自定义域名ssl证书，也可为你绑定的域名开启ssl证书自动申请与续期，无需人工干涉
-- 自定义客户端离线展示页面，可以利用该功能展示一些html单页
-- 支持http/https/socks5多种模式使用客户端网络代理上网，家里轻松访问公司网络
-- 多用户支持，同时满足多人日常穿透需求
-
-体验地址 https://lanp.nioee.com (测试用户名密码 test/123456)
-
-![panel](panel.png)
-
-## Lanproxy开源免费版
+# Lanproxy 内网穿透工具
 
 [README](README_en.md) | [中文文档](README.md)
 
@@ -29,16 +6,72 @@ lanproxy是一个将局域网个人电脑、服务器代理到公网的内网穿
 
 ### 相关地址
 
-- 主页 https://nat.nioee.com
-- lanproxy-go-client https://github.com/ffay/lanproxy-go-client
-- 发布包下载地址 https://github.com/ffay/lanproxy/releases
+- lanproxy-go-client https://github.com/Haoke98/lanproxy-go-client
+- 发布包下载地址 https://github.com/Haoke98/lanproxy/releases
 
 ### 使用
 
-#### 获取发布包
+#### Docker 一键部署（推荐）
 
--	拉取源码，运行 mvn package，打包后的资源放在distribution目录中，包括client和server
--	或直接下载发布包  https://github.com/ffay/lanproxy/releases
+##### 快速开始
+
+1. **克隆项目并构建**
+   ```bash
+   git clone https://github.com/Haoke98/lanproxy.git
+   cd lanproxy
+   chmod +x docker/build.sh
+   ./docker/build.sh
+   ```
+
+2. **配置环境变量**
+   ```bash
+   cp .env.example .env
+   # 编辑 .env 文件，配置你的参数
+   ```
+
+3. **启动服务**
+   ```bash
+   # 启动服务端
+   chmod +x docker/deploy.sh
+   ./docker/deploy.sh server
+   
+   # 或启动服务端和客户端
+   ./docker/deploy.sh all
+   ```
+
+4. **访问管理界面**
+   - 打开浏览器访问：http://localhost:8090
+   - 默认用户名/密码：admin/admin
+
+##### Docker Compose 部署
+
+```bash
+# 仅启动服务端
+docker-compose up -d proxy-server
+
+# 启动服务端和客户端
+docker-compose --profile client up -d
+```
+
+##### 环境变量配置
+
+主要配置项：
+- `SERVER_BIND`: 服务器绑定地址（默认：0.0.0.0）
+- `SERVER_PORT`: 代理通信端口（默认：4900）
+- `WEB_PORT`: Web管理端口（默认：8090）
+- `CONFIG_ADMIN_USERNAME`: 管理员用户名（默认：admin）
+- `CONFIG_ADMIN_PASSWORD`: 管理员密码（默认：admin）
+- `CLIENT_KEY`: 客户端密钥
+- `SERVER_HOST`: 服务器地址
+
+更多配置说明请参考 [Docker部署文档](DOCKER_README.md)
+
+#### 传统部署方式
+
+##### 获取发布包
+
+- 拉取源码，运行 mvn package，打包后的资源放在distribution目录中，包括client和server
+- 或直接下载发布包  https://github.com/ffay/lanproxy/releases
 
 #### 配置
 
@@ -48,10 +81,8 @@ server的配置文件放置在conf目录中，配置 config.properties
 
 ```properties
 server.bind=0.0.0.0
-
 #与代理客户端通信端口
 server.port=4900
-
 #ssl相关配置
 server.ssl.enable=true
 server.ssl.bind=0.0.0.0
@@ -59,10 +90,8 @@ server.ssl.port=4993
 server.ssl.jksPath=test.jks
 server.ssl.keyStorePassword=123456
 server.ssl.keyManagerPassword=123456
-
 #这个配置可以忽略
 server.ssl.needsClientAuth=false
-
 #WEB在线配置管理相关信息
 config.server.bind=0.0.0.0
 config.server.port=8090
@@ -72,11 +101,14 @@ config.admin.password=admin
 
 代理配置，打开地址 http://ip:8090 ，使用上面配置中配置的用户名密码登录，进入如下代理配置界面
 
-![webconfig](readme_zh_client_list.png)
+![webconfig](assets/readme_zh_client_list.png)
 
-![webconfig](readme_zh_proxy_list.png)
+![webconfig](assets/readme_zh_proxy_list.png)
 
-![webconfig](readme_zh_stat_list.png)
+![webconfig](assets/readme_zh_stat_list.png)
+
+TCP请求包内容记录并在网页上展示:
+![RequestLogShow](assets/RequestLog.png)
 
 > 一个server可以支持多个客户端连接
 > 配置数据存放在 ~/.lanproxy/config.json 文件中
@@ -92,10 +124,8 @@ client.key=
 ssl.enable=true
 ssl.jksPath=test.jks
 ssl.keyStorePassword=123456
-
 #这里填写实际的proxy-server地址；没有服务器默认即可，自己有服务器的更换为自己的proxy-server（IP）地址
 server.host=lp.thingsglobal.org
-
 #proxy-server ssl默认端口4993，默认普通端口4900
 #ssl.enable=true时这里填写ssl端口，ssl.enable=false时这里填写普通端口
 server.port=4993
@@ -111,11 +141,11 @@ server.port=4993
 
 ###### 源码地址
 
-https://github.com/ffay/lanproxy-go-client
+https://github.com/Haoke98/lanproxy-go-client
 
 ###### 发布包
 
-https://github.com/ffay/lanproxy-go-client/releases
+https://github.com/Haoke98/lanproxy-go-client/releases
 
 ###### 普通端口连接
 
@@ -145,5 +175,49 @@ nohup ./client_linux_amd64 -s SERVER_IP -p SERVER_SSL_PORT -k CLIENT_KEY -ssl tr
 
 #### 其他
 
-- 在家里使用公司的网络，可以和 https://github.com/ffay/http-proxy-server 这个http代理项目配合使用（个人升级版已经内置代理上网功能，详细资料 https://file.nioee.com/f/76ebbce67c864e4dbe7e/ ）
-- 对于正常网站，80和443端口只有一个，可以购买个人升级版本解决端口复用问题
+- 在家里使用公司的网络，可以和 https://github.com/ffay/http-proxy-server 这个http代理项目配合使用
+
+## 生成 JSK 文件
+
+```shell
+keytool -genkey -keyalg RSA -keysize 2048 -validity 365 -dname "CN=test, OU=test,O=test, L=shanghai, ST=shanghai, C=CN" -alias csii_key -keypass 888888 -keystore sdm-202212011626.jks -storepass 123456
+```
+
+### ⚠️注️：
+
+> 1. 当-keypass 和 -storepass 设为不同时，keytool会给出以下警告：
+> ```shell
+> 警告: PKCS12 密钥库不支持其他存储和密钥口令。正在忽略用户指定的-keypass值。
+> ```
+> 这时在configuration.properties文件中keyStore和keyManager密码必须为一直是kesStore的密码。
+> ```properties
+> server.ssl.keyStorePassword=123456(keystore密码）
+> server.ssl.keyManagerPassword=123456（keystore密码）
+> ```
+> 2.提高安全性： keysize必须为大于等于2048
+> ```shell
+> 生成的证书 使用的 1024 位 RSA 密钥 被视为存在安全风险。此密钥大小将在未来的更新中被禁用。
+>```
+> 详情请见 [“陷阱”素数（‘trapdoored’ primes）的出现，使用1024位密钥加密算法已不再安全](https://searchsecurity.techtarget.com.cn/11-24358/)
+
+### 进阶版
+
+#### 映射配置
+
+![webconfig](assets/进阶版配置表单截图.png)
+
+### 开发&调试
+
+如果想在IDEA中运行并调试，务必要配置Application Configuration
+![img.png](assets/application-configuration-shortcut.png)
+JVM Options:
+```shell
+-Dapp.home=<项目的绝对路径>/proxy-server
+-Djava.awt.headless=true
+-Djava.net.preferIPv4Stack=true
+-Djdk.tls.rejectClientInitiatedRenegotiation=true
+-Xdebug
+-Xnoagent
+-Djava.compiler=NONE
+-Xrunjdwp:transport=dt_socket,address=12000,server=y,suspend=n
+```

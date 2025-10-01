@@ -13,13 +13,25 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.SimpleChannelInboundHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 处理服务端 channel.
  */
 public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
+    private static final Logger logger = LoggerFactory.getLogger(UserChannelHandler.class);
 
-    private static AtomicLong userIdProducer = new AtomicLong(0);
+    private static final AtomicLong userIdProducer = new AtomicLong(0);
+    private RequestInterceptor interceptor = new RequestInterceptor();
+    public RequestLogHandler requestLogHandler = new RequestLogHandler();
+
+    public UserChannelHandler() {
+        // 启动日志处理线程
+        Thread logThread = new Thread(requestLogHandler.new LogProcessor());
+        logThread.setDaemon(true);
+        logThread.start();
+    }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
@@ -39,9 +51,17 @@ public class UserChannelHandler extends SimpleChannelInboundHandler<ByteBuf> {
             // 该端口还没有代理客户端
             ctx.channel().close();
         } else {
+            String userId = ProxyChannelManager.getUserChannelUserId(userChannel);
+            logger.info("buf.readableBytes(): {}", buf.readableBytes());
+            requestLogHandler.logRequest(ctx.channel(), "UserId:" + userId, buf.copy());
             byte[] bytes = new byte[buf.readableBytes()];
             buf.readBytes(bytes);
-            String userId = ProxyChannelManager.getUserChannelUserId(userChannel);
+            // 记录请求
+            // 拦截检查
+            if (interceptor.interceptRequest(ctx.channel())) {
+                ctx.close();
+                return;
+            }
             ProxyMessage proxyMessage = new ProxyMessage();
             proxyMessage.setType(ProxyMessage.P_TYPE_TRANSFER);
             proxyMessage.setUri(userId);

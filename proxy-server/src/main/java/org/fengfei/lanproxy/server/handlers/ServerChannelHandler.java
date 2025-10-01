@@ -18,17 +18,19 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.SimpleChannelInboundHandler;
 
 /**
- *
  * @author fengfei
- *
  */
 public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessage> {
 
-    private static Logger logger = LoggerFactory.getLogger(ServerChannelHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(ServerChannelHandler.class);
+
+    public ServerChannelHandler() {
+    }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ProxyMessage proxyMessage) throws Exception {
         logger.debug("ProxyMessage received {}", proxyMessage.getType());
+        // 原有的请求处理逻辑
         switch (proxyMessage.getType()) {
             case ProxyMessage.TYPE_HEARTBEAT:
                 handleHeartbeatMessage(ctx, proxyMessage);
